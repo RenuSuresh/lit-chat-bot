@@ -1,0 +1,43 @@
+{
+  "name": "renu-lit-components",
+  "version": "1.0.3",
+  "description": "A UI component library built with Lit",
+  "main": "dist/my-lit-components.js",
+  "module": "dist/my-lit-components.esm.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "exports": {
+    ".": {
+      "import": "./dist/my-lit-components.esm.js",
+      "require": "./dist/my-lit-components.js"
+    },
+    "./ai-chat-bot": {
+      "import": "./dist/ai-chat-bot.esm.js",
+      "require": "./dist/ai-chat-bot.js"
+    },
+    "./my-button": {
+      "import": "./dist/my-button.esm.js",
+      "require": "./dist/my-button.js"
+    }
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "lit": "^2.0.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^21.0.1",
+    "@rollup/plugin-node-resolve": "^13.1.3",
+    "@types/node": "^17.0.21",
+    "rollup": "^2.70.0",
+    "rollup-plugin-css-only": "^3.1.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-typescript2": "^0.31.2",
+    "typescript": "^4.6.2"
+  },
+  "keywords": ["web components", "lit", "ui", "components"],
+  "author": "Your Name",
+  "license": "MIT"
+}
