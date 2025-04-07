@@ -1,5 +1,6 @@
 import { html, css, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
+import { unsafeHTML } from "lit/directives/unsafe-html.js";
 
 @customElement("chat-message")
 export class ChatMessage extends LitElement {
@@ -33,6 +34,8 @@ export class ChatMessage extends LitElement {
 	@property({ type: String }) sender: "user" | "bot" = "user";
 
 	render() {
-		return html` <div class="message ${this.sender}">${this.text}</div> `;
+		return html`
+			<div class="message ${this.sender}">${unsafeHTML(this.text)}</div>
+		`;
 	}
 }

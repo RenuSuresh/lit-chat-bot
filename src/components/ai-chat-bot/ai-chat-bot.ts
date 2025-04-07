@@ -7,7 +7,8 @@ import { styles } from "./styles.css";
 export class AIChatBot extends LitElement {
 	static styles = styles;
 
-	@property({ type: String }) apiUrl = "";
+	@property({ type: String }) apiUrl =
+		"https://easybot.private.dataplatform.link/v1/chat-messages";
 	@property({ type: String }) title = "AI Assistant";
 	@property({ type: String }) placeholder = "Type your message...";
 
@@ -79,11 +80,25 @@ export class AIChatBot extends LitElement {
 		try {
 			// Call your AI API
 			const botResponse = await this._getAIResponse(userMessage);
+			if (!botResponse) {
+				throw new Error("No bot response received");
+			}
+
+			const response = await JSON.parse(botResponse);
+			try {
+				console.log("response.answer>>>>", response);
+				const message = await JSON.parse(response.answer);
+			} catch (error) {
+				console.log("error>>>>>", error);
+			}
 
 			// Add bot response
 			this._messages = [
 				...this._messages,
-				{ text: botResponse, sender: "bot" },
+				{
+					text: "<p>Sorry I did not understand. Can you please elaborate your personal health or order related question?</p>",
+					sender: "bot",
+				},
 			];
 		} catch (error) {
 			console.error("Error getting AI response:", error);
@@ -113,8 +128,15 @@ export class AIChatBot extends LitElement {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
+				Authorization: "Bearer app-YX12rgf0CVRSXdtd4txQNOjy",
 			},
-			body: JSON.stringify({ message }),
+			body: JSON.stringify({
+				inputs: { userId: "39783010", parentOrderId: "525744916255784960" },
+				query: message,
+				response_mode: "blocking",
+				conversation_id: "d3b1c91f-7dc0-41d5-9b61-3a9f154310d7",
+				user: "Rakesh",
+			}),
 		});
 
 		if (!response.ok) {
@@ -122,6 +144,7 @@ export class AIChatBot extends LitElement {
 		}
 
 		const data = await response.json();
-		return data.reply;
+		console.log("message bot>>>>>");
+		return JSON.stringify(data);
 	}
 }
