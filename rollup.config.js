@@ -36,16 +36,21 @@ import css from 'rollup-plugin-css-only';
 
 // Array of component configurations
 const components = [
+  // {
+  //   name: 'ai-chat-bot',
+  //   input: 'src/components/ai-chat-bot/ai-chat-bot.ts',
+  //   css: true
+  // },
   {
-    name: 'ai-chat-bot',
-    input: 'src/components/ai-chat-bot/ai-chat-bot.ts',
+    name: "ai-chat",
+    input: "src/components/ai-chat/ai-chat.ts",
     css: true
   },
-  {
-    name: 'my-button',
-    input: 'src/components/my-button/my-button.ts',
-    css: false
-  }
+  // {
+  //   name: 'my-button',
+  //   input: 'src/components/my-button/my-button.ts',
+  //   css: false
+  // }
   // Add other components here
 ];
 
