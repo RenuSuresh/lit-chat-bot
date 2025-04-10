@@ -47,8 +47,7 @@ export const styles = css`
 		background-color: #ffffff;
 		padding: 0 16px;
 		overflow-y: auto;
-		height: calc(100vh - 120px);
-		border: 1px solid #3e415b;
+		height: calc(100vh - 142px);
 	}
 
 	.chat-timestamp-wrapper {
@@ -132,23 +131,31 @@ export const styles = css`
 
 	.input-area {
 		display: flex;
-		padding: 12px;
+		padding: 16px;
 		background-color: white;
-		border-top: 1px solid #eee;
 		position: sticky;
 		bottom: 0;
+		background-color: #ebf2ff;
+		box-shadow: 0px 0px 4px 0px #0000000f;
+		border-top: 1px solid #e6ebf4;
+		gap: 12px;
+		align-items: center;
 	}
-
-	input {
+	.chat-input {
 		flex-grow: 1;
-		padding: 10px 12px;
-		border: 1px solid #ddd;
-		border-radius: 20px;
-		outline: none;
-	}
+		padding: 16px;
+		border: 1px solid #e6ebf4;
+		border-width: 1px;
+		border-radius: 16px;
 
-	input:focus {
-		border-color: #4285f4;
+		outline: none;
+		font-weight: 500;
+		font-size: 14px;
+		line-height: 24px;
+		color: #8897a2;
+	}
+	.chat-input::placeholder {
+		color: #8897a2;
 	}
 
 	.bot-timestamp {
@@ -171,6 +178,14 @@ export const styles = css`
 		margin-right: 48px;
 		color: #6e787e;
 		padding-top: 4px;
+	}
+
+	.send-btn {
+		background-color: transparent;
+		border: none;
+		cursor: pointer;
+		padding: 0;
+		display: flex;
 	}
 
 	/* .chat-container {
