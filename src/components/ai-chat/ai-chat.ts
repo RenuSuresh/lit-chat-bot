@@ -1,35 +1,27 @@
-import { LitElement, html, css, nothing } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
-import { when } from "lit/directives/when.js";
-import { styles } from "./styles.css";
+import { LitElement, html } from "lit";
+import { customElement, state } from "lit/decorators.js";
 import { chatBotApi } from "../services/chat.service";
-import { unsafeHTML } from "lit/directives/unsafe-html.js";
+import "./chat-message-list";
+import "./chat-input";
+import { styles } from "./styles.css";
 
 @customElement("ai-chat")
 export class AIChat extends LitElement {
 	static styles = styles;
-	@state() private isNewConversation = true;
-	@state() private _messages: Array<{ text: string; sender: "user" | "bot" }> =
-		[];
-	@state() private _inputValue = "";
-	@state() private _isLoading = false;
-	@state() private botMessage = "";
-
-	@property({ type: Array })
-	messages = [
+	@state() private messages: Array<ChatMessage> = [
 		{
 			sender: "bot",
 			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
+			time: this.getCurrentTime(),
 		},
 		{
 			sender: "user",
-			text: "Where is my order?",
-			time: "12:30 PM",
+			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
+			time: this.getCurrentTime(),
 		},
 	];
-
-	@property({ type: String })
-	newMessage = "";
+	@state() private conversationId: string =
+		"4bb91e16-7a12-44ee-9b16-25c9bddeb2da";
 
 	render() {
 		return html`
@@ -37,131 +29,94 @@ export class AIChat extends LitElement {
 				<h2 class="chat-title">Chat with Easybot</h2>
 				<p class="chat-subtitle">Get help 24/7</p>
 			</div>
-			<div>
-				<div class="chat-container">
-					${this.isNewConversation
-						? html`
-								<div class="chat-timestamp-wrapper">
-									<div class="timestamp-left-line"></div>
-									<div class="timestamp">Today • 12:28 PM</div>
-									<div class="timestamp-right-line"></div>
-								</div>
-						  `
-						: nothing}
-					${this.messages.map(
-						(msg) => html`
-							
-								${when(
-									msg.sender === "bot",
-									() => html`
-										<div class="bot-message-container">
-											<img
-												src="https://assets.pharmeasy.in/web-assets/_next/icons/mobile-logo.svg"
-												width="40"
-												height="40"
-												alt="bot-icon"
-											/>
-											<div class="bot-message">${unsafeHTML(msg.text)}</div>
-										</div>
-										<div class="bot-timestamp">${msg.time}</div>
-									`,
-									() => html`
-										<div class="user-message-container">
-											<div class="user-message">${msg.text}</div>
-											<img
-												src="https://assets.pharmeasy.in/web-assets/_next/icons/gpay.svg"
-												width="40"
-												height="40"
-												alt="user-icon"
-											/>
-										</div>
-										<div class="user-timestamp">${msg.time}</div>
-									`
-								)}
-							</div>
-						`
-					)}
-				</div>
-				<div class="input-area">
-					<input
-						type="text"
-						placeholder="Type your query here"
-						.value=${this.newMessage}
-						@input=${this.handleInput}
-						@keypress=${this.handleKeyPress}
-					/>
-					<button
-						@click=${() => this.sendUserMessage(this.newMessage)}
-						?disabled=${!this.newMessage.trim() || this._isLoading}
-					>
-						Send
-					</button>
-				</div>
-			</div>
+			<chat-message-list .messages=${this.messages}></chat-message-list>
+			<chat-input @send-message=${this.handleSendMessage}></chat-input>
 		`;
 	}
 
-	async sendUserMessage(text: string) {
+	private async handleSendMessage(e: CustomEvent) {
+		const userMessage = e.detail.text;
+		this.addMessage({
+			sender: "user",
+			text: userMessage,
+			time: this.getCurrentTime(),
+		});
+
 		try {
+			// Send the message without the conversation ID initially
 			const response = await chatBotApi.sendMessage(
 				"Rakesh",
-				text,
-				"d3b1c91f-7dc0-41d5-9b61-3a9f154310d7"
+				userMessage,
+				this.conversationId
 			);
-			this.botMessage =
-				JSON.parse(response.answer).assistantLastMessage || "hey";
-			this.sendMessage();
-		} catch (error) {}
-	}
 
-	handleInput(e: Event) {
-		this.newMessage = (e.target as HTMLInputElement).value;
-	}
+			// Store the conversation ID from the response
+			this.conversationId = response.conversation_id;
 
-	handleKeyPress(e: KeyboardEvent) {
-		if (e.key === "Enter" && this.newMessage.trim()) {
-			this.sendUserMessage(this.newMessage);
+			const botMessage =
+				JSON.parse(response.answer).assistantLastMessage ||
+				"Sorry, I encountered an error. Please try again.";
+
+			this.addMessage({
+				sender: "bot",
+				text: botMessage,
+				time: this.getCurrentTime(),
+			});
+		} catch (error) {
+			this.addMessage({
+				sender: "bot",
+				text: "Sorry, I encountered an error. Please try again.",
+				time: this.getCurrentTime(),
+			});
 		}
 	}
 
-	sendMessage() {
-		this.messages = [
-			...this.messages,
-			{
-				sender: "user",
-				text: this.newMessage,
-				time: new Date().toLocaleTimeString([], {
-					hour: "2-digit",
-					minute: "2-digit",
-				}),
-			},
-		];
-
-		this.newMessage = "";
+	private addMessage(message: ChatMessage) {
+		this.messages = [...this.messages, message];
 		this.requestUpdate();
-
-		// Scroll to bottom
-		setTimeout(() => {
-			const container = this.shadowRoot?.querySelector(".chat-container");
-			if (container) {
-				container.scrollTop = container.scrollHeight;
-			}
-		}, 0);
-
-		// Simulate bot response after delay
-		setTimeout(() => {
-			this.messages = [
-				...this.messages,
-				{
-					sender: "bot",
-					text: this.botMessage,
-					time: new Date().toLocaleTimeString([], {
-						hour: "2-digit",
-						minute: "2-digit",
-					}),
-				},
-			];
-			this.requestUpdate();
-		}, 1000);
+		this.scrollToBottom();
 	}
+
+	private async scrollToBottom() {
+		// Wait for Lit to finish rendering
+		await this.updateComplete;
+
+		// Find the chat container by piercing through shadow DOM
+		const root = this.shadowRoot;
+		if (!root) return;
+
+		// First try to find chat-message-list component
+		const chatMessageList = root.querySelector("chat-message-list");
+		if (!chatMessageList) return;
+
+		// Get its shadow root
+		const messageListShadow = chatMessageList.shadowRoot;
+		if (!messageListShadow) return;
+
+		// Find the actual scrollable container
+		const scrollContainer = messageListShadow.querySelector(".chat-container");
+		if (!scrollContainer) return;
+
+		// Perform the scroll with smooth behavior
+		scrollContainer.scrollTo({
+			top: scrollContainer.scrollHeight,
+			behavior: "smooth",
+		});
+
+		// Fallback for immediate scroll
+		scrollContainer.scrollTop = scrollContainer.scrollHeight;
+	}
+
+	private getCurrentTime(): string {
+		return new Date().toLocaleTimeString([], {
+			hour: "2-digit",
+			minute: "2-digit",
+		});
+	}
+}
+
+interface ChatMessage {
+	sender: "user" | "bot";
+	text: string;
+	time: string;
 }
