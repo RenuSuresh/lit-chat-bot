@@ -56,6 +56,7 @@ export const styles = css`
 		justify-content: center;
 		gap: 4px;
 		margin-top: 148px;
+		margin-bottom: 32px;
 	}
 
 	.timestamp-left-line {
@@ -116,17 +117,28 @@ export const styles = css`
 		line-height: 18px;
 	}
 
+	.bot-message-content {
+		display: flex;
+		gap: 8px;
+	}
 	.bot-message-container {
 		display: flex;
-		gap: 8px;
-		margin-top: 32px;
+		flex-direction: column;
+		gap: 4px;
+
+		margin-bottom: 24px;
 	}
 
-	.user-message-container {
+	.user-message-content {
 		display: flex;
 		gap: 8px;
-		margin-top: 32px;
 		justify-content: flex-end;
+	}
+	.user-message-container {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		margin-bottom: 24px;
 	}
 
 	.input-area {
@@ -162,22 +174,17 @@ export const styles = css`
 		font-weight: 400;
 		font-size: 10px;
 		line-height: 16px;
-		letter-spacing: 0%;
 		text-align: left;
 		margin-left: 48px;
 		color: #6e787e;
-		padding-top: 4px;
 	}
 
 	.user-timestamp {
 		font-weight: 400;
 		font-size: 10px;
 		line-height: 16px;
-		letter-spacing: 0%;
 		text-align: right;
-		margin-right: 48px;
 		color: #6e787e;
-		padding-top: 4px;
 	}
 
 	.send-btn {
@@ -187,59 +194,4 @@ export const styles = css`
 		padding: 0;
 		display: flex;
 	}
-
-	/* .chat-container {
-		background-color: #f9f9f9;
-		height: 400px;
-		padding: 16px;
-		overflow-y: auto;
-		border: 10px solid green;
-	}
-
-	.message {
-		margin-bottom: 12px;
-		max-width: 80%;
-		padding: 8px 12px;
-		border-radius: 18px;
-		line-height: 1.4;
-	}
-
-	.bot-message {
-		background-color: white;
-		border-bottom-left-radius: 4px;
-		align-self: flex-start;
-	}
-
-	.user-message {
-		background-color: #4285f4;
-		color: white;
-		border-bottom-right-radius: 4px;
-		margin-left: auto;
-	}
-
-	.timestamp {
-		font-size: 0.75rem;
-		color: #666;
-		margin: 4px 0;
-		text-align: center;
-	}
-
-	.input-area {
-		display: flex;
-		padding: 12px;
-		background-color: white;
-		border-top: 1px solid #eee;
-	}
-
-	input {
-		flex-grow: 1;
-		padding: 10px 12px;
-		border: 1px solid #ddd;
-		border-radius: 20px;
-		outline: none;
-	}
-
-	input:focus {
-		border-color: #4285f4;
-	} */
 `;

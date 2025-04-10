@@ -40,21 +40,25 @@ export class ChatMessageList extends LitElement {
 							msg.sender === "bot",
 							() => html`
 								<div class="bot-message-container">
-									<img
-										src="https://assets.pharmeasy.in/web-assets/images/image_chatbot.png"
-										alt="bot"
-										width="40"
-										height="40"
-									/>
-									<div class="bot-message">${unsafeHTML(msg.text)}</div>
+									<div class="bot-message-content">
+										<img
+											src="https://assets.pharmeasy.in/web-assets/images/image_chatbot.png"
+											alt="bot"
+											width="40"
+											height="40"
+										/>
+										<div class="bot-message">${unsafeHTML(msg.text)}</div>
+									</div>
+									<div class="bot-timestamp">${msg.time}</div>
 								</div>
-								<div class="timestamp">${msg.time}</div>
 							`,
 							() => html`
 								<div class="user-message-container">
-									<div class="user-message">${msg.text}</div>
+									<div class="user-message-content">
+										<div class="user-message">${msg.text}</div>
+									</div>
+									<div class="user-timestamp">${msg.time}</div>
 								</div>
-								<div class="timestamp">${msg.time}</div>
 							`
 						)}
 					`

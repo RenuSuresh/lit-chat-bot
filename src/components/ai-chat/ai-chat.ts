@@ -14,8 +14,14 @@ export class AIChat extends LitElement {
 			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
 			time: this.getCurrentTime(),
 		},
+		{
+			sender: "user",
+			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
+			time: this.getCurrentTime(),
+		},
 	];
-	@state() private conversationId: string | null = null;
+	@state() private conversationId: string =
+		"4bb91e16-7a12-44ee-9b16-25c9bddeb2da";
 
 	render() {
 		return html`
@@ -38,7 +44,11 @@ export class AIChat extends LitElement {
 
 		try {
 			// Send the message without the conversation ID initially
-			const response = await chatBotApi.sendMessage("Rakesh", userMessage);
+			const response = await chatBotApi.sendMessage(
+				"Rakesh",
+				userMessage,
+				this.conversationId
+			);
 
 			// Store the conversation ID from the response
 			this.conversationId = response.conversation_id;
