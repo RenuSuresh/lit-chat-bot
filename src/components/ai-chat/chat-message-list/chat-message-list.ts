@@ -25,8 +25,10 @@ export class ChatMessageList extends LitElement {
 
 	@state() isNewConversation = true;
 	@property({ type: Array }) messages: ChatMessage[] = [];
+	@property({ type: Boolean }) loading: boolean = false; // Accept loading as a prop
 
 	render() {
+		console.log(this.loading);
 		return html`
 			<div class="chat-container">
 				${when(
@@ -54,6 +56,7 @@ export class ChatMessageList extends LitElement {
 										<div class="bot-message">${unsafeHTML(msg.text)}</div>
 									</div>
 									<div class="bot-timestamp">${msg.time}</div>
+									<!-- Show loader if loading -->
 								</div>
 							`,
 							() => html`
@@ -67,6 +70,21 @@ export class ChatMessageList extends LitElement {
 						)}
 					`
 				)}
+				${this.loading
+					? html`<div class="bot-message-container">
+							<div class="bot-message-content">
+								<img
+									src="https://assets.pharmeasy.in/web-assets/images/image_chatbot.png"
+									alt="bot"
+									width="40"
+									height="40"
+								/>
+								<div class="bot-message">
+									<loading-dots></loading-dots>
+								</div>
+							</div>
+					  </div>`
+					: null}
 			</div>
 		`;
 	}

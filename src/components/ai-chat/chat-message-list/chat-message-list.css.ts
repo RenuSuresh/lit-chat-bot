@@ -5,7 +5,7 @@ export const styles = css`
 		background-color: #ffffff;
 		padding: 0 16px;
 		overflow-y: auto;
-		height: calc(100vh - 142px);
+		height: calc(100vh - 150px);
 	}
 
 	.bot-message-container {
@@ -28,7 +28,6 @@ export const styles = css`
 	}
 
 	.bot-message {
-		width: 251px;
 		border-top-left-radius: 2px;
 		border-top-right-radius: 16px;
 		border-bottom-right-radius: 16px;
