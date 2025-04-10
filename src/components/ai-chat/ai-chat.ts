@@ -6,12 +6,15 @@ import { chatBotApi } from "../services/chat.service";
 import "./header/chat-header";
 import "./chat-message-list/chat-message-list";
 import "./chat-input/chat-input";
+import "./chat-loader/chat-loader";
 
 import { commonStyles } from "./styles.css";
 
 @customElement("ai-chat")
 export class AIChat extends LitElement {
 	static styles = [commonStyles];
+	@state() private isLoading: boolean = false;
+
 	@state() private messages: Array<ChatMessage> = [
 		{
 			sender: "bot",
@@ -30,12 +33,16 @@ export class AIChat extends LitElement {
 	render() {
 		return html`
 			<chat-header></chat-header>
-			<chat-message-list .messages=${this.messages}></chat-message-list>
+			<chat-message-list
+				.messages=${this.messages}
+				.loading=${this.isLoading}
+			></chat-message-list>
 			<chat-input @send-message=${this.handleSendMessage}></chat-input>
 		`;
 	}
 
 	private async handleSendMessage(e: CustomEvent) {
+		this.isLoading = true;
 		const userMessage = e.detail.text;
 		this.addMessage({
 			sender: "user",
@@ -69,6 +76,8 @@ export class AIChat extends LitElement {
 				text: "Sorry, I encountered an error. Please try again.",
 				time: this.getCurrentTime(),
 			});
+		} finally {
+			this.isLoading = false;
 		}
 	}
 
