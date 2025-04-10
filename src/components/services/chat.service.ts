@@ -26,18 +26,30 @@ interface ConversationHistory {
 class ChatBotApi {
 	private readonly basePath = "v1/chat-messages";
 
-	async sendMessage(
-		user: string,
-		message: string,
-		conversationId?: string
-	): Promise<any> {
-		const response = await api.post<SendMessageResponse>(`${this.basePath}`, {
-			inputs: { userId: "39783010", parentOrderId: "525744916255784960" },
-			query: message,
-			response_mode: "blocking",
-			conversation_id: conversationId || undefined,
-			user: user,
-		});
+	async sendMessage({
+		body,
+		message,
+		conversationId,
+		headers,
+	}: {
+		body: any;
+		message: string;
+		conversationId?: string;
+		headers?: Record<string, string>;
+	}): Promise<any> {
+		const response = await api.post<SendMessageResponse>(
+			`${this.basePath}`,
+			{
+				inputs: body.inputs,
+				query: message,
+				response_mode: "blocking",
+				conversation_id: conversationId || undefined,
+				user: body.user,
+			},
+			{
+				headers,
+			}
+		);
 		return response;
 	}
 

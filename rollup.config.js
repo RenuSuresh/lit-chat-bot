@@ -43,7 +43,7 @@ const components = [
   // },
   {
     name: "ai-chat",
-    input: "src/components/ai-chat/ai-chat.ts",
+    input: "src/components/ai-chat/index.ts",
     css: true
   },
   // {

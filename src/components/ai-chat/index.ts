@@ -1,5 +1,5 @@
 import { LitElement, html } from "lit";
-import { customElement, state } from "lit/decorators.js";
+import { customElement, property, state } from "lit/decorators.js";
 
 import { chatBotApi } from "../services/chat.service";
 
@@ -13,7 +13,12 @@ import { commonStyles } from "./styles.css";
 @customElement("ai-chat")
 export class AIChat extends LitElement {
 	static styles = [commonStyles];
+
+	@property({ type: Object }) apiBody: any;
+
 	@state() private isLoading: boolean = false;
+
+	@state() private chatbotData: any = {};
 
 	@state() private messages: Array<ChatMessage> = [
 		{
@@ -27,8 +32,16 @@ export class AIChat extends LitElement {
 			time: this.getCurrentTime(),
 		},
 	];
+
 	@state() private conversationId: string =
 		"4bb91e16-7a12-44ee-9b16-25c9bddeb2da";
+
+	constructor() {
+		super();
+		this.chatbotData = JSON.parse(
+			sessionStorage.getItem("chatbotData") || "{}"
+		);
+	}
 
 	render() {
 		return html`
@@ -52,11 +65,11 @@ export class AIChat extends LitElement {
 
 		try {
 			// Send the message without the conversation ID initially
-			const response = await chatBotApi.sendMessage(
-				"Rakesh",
-				userMessage,
-				this.conversationId
-			);
+			const response = await chatBotApi.sendMessage({
+				body: this.chatbotData.chatAPI.body,
+				message: userMessage,
+				conversationId: this.conversationId,
+			});
 
 			// Store the conversation ID from the response
 			this.conversationId = response.conversation_id;
@@ -71,6 +84,7 @@ export class AIChat extends LitElement {
 				time: this.getCurrentTime(),
 			});
 		} catch (error) {
+			console.log("error>>>>>", error);
 			this.addMessage({
 				sender: "bot",
 				text: "Sorry, I encountered an error. Please try again.",
