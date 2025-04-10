@@ -2,8 +2,11 @@ import { LitElement, html } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { when } from "lit/directives/when.js";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
-import { styles } from "./styles.css";
-import "./timestamp-divider";
+
+import "../timestamp-divider/timestamp-divider";
+
+import { commonStyles } from "../styles.css";
+import { styles } from "./chat-message-list.css";
 
 interface ChatMessage {
 	sender: "user" | "bot" | "system";
@@ -18,7 +21,8 @@ interface ChatMessage {
 
 @customElement("chat-message-list")
 export class ChatMessageList extends LitElement {
-	static styles = styles;
+	static styles = [commonStyles, styles];
+
 	@state() isNewConversation = true;
 	@property({ type: Array }) messages: ChatMessage[] = [];
 
@@ -30,7 +34,7 @@ export class ChatMessageList extends LitElement {
 					() => html`
 						<timestamp-divider
 							.date=${new Date()}
-							showFullDate
+							.showFullDate=${true}
 						></timestamp-divider>
 					`
 				)}

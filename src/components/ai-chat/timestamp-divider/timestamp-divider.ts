@@ -1,11 +1,12 @@
-// timestamp-divider.ts
 import { LitElement, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { styles } from "./styles.css";
+
+import { commonStyles } from "../styles.css";
+import { styles } from "./timestamp-divider.css";
 
 @customElement("timestamp-divider")
 export class TimestampDivider extends LitElement {
-	static styles = styles;
+	static styles = [commonStyles, styles];
 	@property({ type: String }) timestamp = "";
 	@property({ type: Date }) date?: Date;
 

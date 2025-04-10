@@ -35,7 +35,7 @@ class ChatBotApi {
 			inputs: { userId: "39783010", parentOrderId: "525744916255784960" },
 			query: message,
 			response_mode: "blocking",
-			conversation_id: conversationId,
+			conversation_id: conversationId || undefined,
 			user: user,
 		});
 		return response;

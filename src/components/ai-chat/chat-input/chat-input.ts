@@ -1,11 +1,13 @@
-import { LitElement, html, css } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
-import { styles } from "./styles.css";
-// import sendIcon from "../../assets/icon_sendMessage.svg";
+import { LitElement, html } from "lit";
+import { customElement, state } from "lit/decorators.js";
+
+import { commonStyles } from "../styles.css";
+import { styles } from "./chat-input.css";
 
 @customElement("chat-input")
 export class ChatInput extends LitElement {
-	static styles = styles;
+	static styles = [commonStyles, styles];
+
 	@state() private inputValue = "";
 
 	render() {

@@ -1,13 +1,17 @@
 import { LitElement, html } from "lit";
 import { customElement, state } from "lit/decorators.js";
+
 import { chatBotApi } from "../services/chat.service";
-import "./chat-message-list";
-import "./chat-input";
-import { styles } from "./styles.css";
+
+import "./header/chat-header";
+import "./chat-message-list/chat-message-list";
+import "./chat-input/chat-input";
+
+import { commonStyles } from "./styles.css";
 
 @customElement("ai-chat")
 export class AIChat extends LitElement {
-	static styles = styles;
+	static styles = [commonStyles];
 	@state() private messages: Array<ChatMessage> = [
 		{
 			sender: "bot",
@@ -25,10 +29,7 @@ export class AIChat extends LitElement {
 
 	render() {
 		return html`
-			<div class="header">
-				<h2 class="chat-title">Chat with Easybot</h2>
-				<p class="chat-subtitle">Get help 24/7</p>
-			</div>
+			<chat-header></chat-header>
 			<chat-message-list .messages=${this.messages}></chat-message-list>
 			<chat-input @send-message=${this.handleSendMessage}></chat-input>
 		`;
