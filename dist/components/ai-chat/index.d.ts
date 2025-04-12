@@ -1,0 +1,31 @@
+import { LitElement } from "lit";
+import "./header/chat-header";
+import "./chat-message-list/chat-message-list";
+import "./chat-input/chat-input";
+import { Theme } from "./theme.interface";
+export declare class AIChat extends LitElement {
+    static styles: import("lit").CSSResult[];
+    apiBody: any;
+    botImage: string;
+    sendMsgEnableImage: string;
+    sendMsgDisableImage: string;
+    closeChatIcon: string;
+    onCloseChat?: () => void;
+    showCloseButton: boolean;
+    buttonLabel: string;
+    theme: Theme;
+    private isLoading;
+    private chatbotData;
+    private messages;
+    private conversationId;
+    constructor();
+    connectedCallback(): void;
+    private loadHeaderComponent;
+    private loadChatLoaderComponent;
+    private _handlePageClose;
+    private handleSendMessage;
+    private addMessage;
+    private scrollToBottom;
+    private getCurrentTime;
+    render(): import("lit-html").TemplateResult<1>;
+}

@@ -6,7 +6,6 @@ import { chatBotApi } from "../services/chat.service";
 import "./header/chat-header";
 import "./chat-message-list/chat-message-list";
 import "./chat-input/chat-input";
-import "./chat-loader/chat-loader";
 
 import { commonStyles } from "./styles.css";
 import { Theme } from "./theme.interface";
@@ -75,6 +74,28 @@ export class AIChat extends LitElement {
 		super();
 		this.chatbotData = JSON.parse(
 			sessionStorage.getItem("chatbotData") || "{}"
+		);
+	}
+
+	connectedCallback() {
+		super.connectedCallback();
+		// Load header when component connects to DOM
+		this.loadHeaderComponent();
+		this.loadChatLoaderComponent();
+	}
+
+	private async loadHeaderComponent() {
+		// Dynamic import with webpack chunk name comment
+		await import(
+			/* webpackChunkName: "chat-header" */
+			"./header/chat-header"
+		);
+	}
+	private async loadChatLoaderComponent() {
+		// Dynamic import with webpack chunk name comment
+		await import(
+			/* webpackChunkName: "chat-loader" */
+			"./chat-loader/chat-loader"
 		);
 	}
 
@@ -191,10 +212,12 @@ export class AIChat extends LitElement {
 					--user-msg-border-color: ${this.theme.userMsgBorderColor};
 				}
 			</style>
+
 			<chat-header
 				.closeChatIcon=${this.closeChatIcon}
 				.onCloseChat=${this._handlePageClose}
 			></chat-header>
+
 			<chat-message-list
 				.messages=${this.messages}
 				.loading=${this.isLoading}
