@@ -1,4 +1,4 @@
-import { LitElement, html } from "lit";
+import { LitElement, html, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 
 import { chatBotApi } from "../services/chat.service";
@@ -9,12 +9,48 @@ import "./chat-input/chat-input";
 import "./chat-loader/chat-loader";
 
 import { commonStyles } from "./styles.css";
+import { Theme } from "./theme.interface";
 
 @customElement("ai-chat")
 export class AIChat extends LitElement {
 	static styles = [commonStyles];
 
 	@property({ type: Object }) apiBody: any;
+	@property({ type: String }) botImage: string = "";
+	@property({ type: String }) sendMsgEnableImage: string = "";
+	@property({ type: String }) sendMsgDisableImage: string = "";
+	@property({ type: String }) closeChatIcon: string =
+		"https://assets.pharmeasy.in/web-assets/images/ic_close.svg";
+	@property({ attribute: false }) onCloseChat?: () => void;
+
+	@property({ type: Boolean, attribute: "show-close-button" })
+	showCloseButton = false;
+	@property({ type: String, attribute: "button-label" })
+	buttonLabel = "Close";
+
+	@property({ type: Object }) theme: Theme = {
+		fontFamily: "Inter, sans-serif",
+
+		headerBgColor: "#3e415b",
+		headerTitleColor: "#ffffff",
+		headerSubtitleColor: "#f5f8fc",
+
+		messageContainerBgColor: "#ffffff",
+		loaderColor: "#3e415b",
+
+		botMsgBgColor: "#ffffff",
+		botMsgBorderColor: "#e6ebf4",
+		botMsgTextColor: "#30363c",
+
+		userMsgBgColor: "#EBF2FF",
+		userMsgTextColor: "#30363c",
+		userMsgBorderColor: "#B5CDF7",
+
+		inputBackgroundColor: "#ebf2ff",
+		inputBorderColor: "#e6ebf4",
+		inputTextColor: "#30363c",
+		placeholderTextColor: "#8897a2",
+	};
 
 	@state() private isLoading: boolean = false;
 
@@ -33,8 +69,7 @@ export class AIChat extends LitElement {
 		},
 	];
 
-	@state() private conversationId: string =
-		"4bb91e16-7a12-44ee-9b16-25c9bddeb2da";
+	@state() private conversationId: string = "";
 
 	constructor() {
 		super();
@@ -43,16 +78,9 @@ export class AIChat extends LitElement {
 		);
 	}
 
-	render() {
-		return html`
-			<chat-header></chat-header>
-			<chat-message-list
-				.messages=${this.messages}
-				.loading=${this.isLoading}
-			></chat-message-list>
-			<chat-input @send-message=${this.handleSendMessage}></chat-input>
-		`;
-	}
+	private _handlePageClose = () => {
+		this.onCloseChat?.();
+	};
 
 	private async handleSendMessage(e: CustomEvent) {
 		this.isLoading = true;
@@ -84,7 +112,6 @@ export class AIChat extends LitElement {
 				time: this.getCurrentTime(),
 			});
 		} catch (error) {
-			console.log("error>>>>>", error);
 			this.addMessage({
 				sender: "bot",
 				text: "Sorry, I encountered an error. Please try again.",
@@ -136,6 +163,45 @@ export class AIChat extends LitElement {
 			hour: "2-digit",
 			minute: "2-digit",
 		});
+	}
+
+	render() {
+		return html`
+			<style>
+				:host {
+					--font-family: ${this.theme.fontFamily};
+					--header-bg-color: ${this.theme.headerBgColor};
+					--header-title-color: ${this.theme.headerTitleColor};
+					--header-subtitle-color: ${this.theme.headerSubtitleColor};
+
+					--message-bg-color: ${this.theme.messageContainerBgColor};
+					--loader-color: ${this.theme.loaderColor};
+
+					--input-background-color: ${this.theme.inputBackgroundColor};
+					--input-border-color: ${this.theme.inputBorderColor};
+					--placeholder-text-color: ${this.theme.placeholderTextColor};
+					--input-text-color: ${this.theme.inputTextColor};
+
+					--bot-msg-bg-color: ${this.theme.botMsgBgColor};
+					--bot-msg-border-color: ${this.theme.botMsgBorderColor};
+					--bot-msg-text-color: ${this.theme.botMsgTextColor};
+
+					--user-msg-bg-color: ${this.theme.userMsgBgColor};
+					--user-msg-text-color: ${this.theme.userMsgTextColor};
+					--user-msg-border-color: ${this.theme.userMsgBorderColor};
+				}
+			</style>
+			<chat-header
+				.closeChatIcon=${this.closeChatIcon}
+				.onCloseChat=${this._handlePageClose}
+			></chat-header>
+			<chat-message-list
+				.messages=${this.messages}
+				.loading=${this.isLoading}
+				.botImage=${this.botImage}
+			></chat-message-list>
+			<chat-input @send-message=${this.handleSendMessage}></chat-input>
+		`;
 	}
 }
 

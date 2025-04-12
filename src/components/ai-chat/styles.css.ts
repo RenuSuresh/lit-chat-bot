@@ -3,7 +3,7 @@ import { css } from "lit";
 export const commonStyles = css`
 	:host {
 		display: block;
-		font-family: Inter, sans-serif;
+		font-family: var(--font-family);
 		overflow: hidden;
 	}
 

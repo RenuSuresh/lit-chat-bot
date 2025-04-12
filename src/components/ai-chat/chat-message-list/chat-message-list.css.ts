@@ -2,7 +2,7 @@ import { css } from "lit";
 
 export const styles = css`
 	.chat-container {
-		background-color: #ffffff;
+		background-color: var(--message-container-bg-color);
 		padding: 0 16px;
 		overflow-y: auto;
 		height: calc(100vh - 150px);
@@ -28,33 +28,29 @@ export const styles = css`
 	}
 
 	.bot-message {
-		border-top-left-radius: 2px;
-		border-top-right-radius: 16px;
-		border-bottom-right-radius: 16px;
-		border-bottom-left-radius: 16px;
+		border-radius: 2px 16px 16px 16px;
 		border-width: 1px;
-		border: 1px solid #e6ebf4;
+		border: 1px solid var(--bot-msg-border-color);
 		padding: 12px;
 		font-weight: 500;
 		font-size: 12px;
 		line-height: 18px;
-		color: #30363c;
+		color: var(--bot-msg-text-color);
+		background-color: var(--bot-msg-bg-color);
+		width: calc(100% - 100px);
 	}
 
 	.user-message {
-		width: 146px;
-		border-top-left-radius: 16px;
-		border-top-right-radius: 2px;
-		border-bottom-right-radius: 16px;
-		border-bottom-left-radius: 16px;
+		border-radius: 16px 2px 16px 16px;
 		border-width: 1px;
 		padding: 12px;
-		border: 1px solid #b5cdf7;
-		background-color: #ebf2ff;
-		color: #30363c;
+		border: 1px solid var(--user-msg-border-color);
+		background-color: var(--user-msg-bg-color);
+		color: var(--user-msg-text-color);
 		font-weight: 500;
 		font-size: 12px;
 		line-height: 18px;
+		width: calc(100% - 100px);
 	}
 
 	.user-message-content {

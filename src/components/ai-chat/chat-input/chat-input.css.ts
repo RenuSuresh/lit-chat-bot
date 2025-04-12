@@ -4,12 +4,12 @@ export const styles = css`
 	.input-area {
 		display: flex;
 		padding: 16px;
-		background-color: white;
+		background-color: #ffffff;
 		position: sticky;
 		bottom: 0;
-		background-color: #ebf2ff;
+		background-color: var(--input-background-color);
 		box-shadow: 0px 0px 4px 0px #0000000f;
-		border-top: 1px solid #e6ebf4;
+		border-top: 1px solid var(--border-color);
 		gap: 12px;
 		align-items: center;
 	}
@@ -17,7 +17,7 @@ export const styles = css`
 	.chat-input {
 		flex-grow: 1;
 		padding: 16px;
-		border: 1px solid #e6ebf4;
+		border: 1px solid var(--border-color);
 		border-width: 1px;
 		border-radius: 16px;
 
@@ -25,11 +25,11 @@ export const styles = css`
 		font-weight: 500;
 		font-size: 14px;
 		line-height: 24px;
-		color: #8897a2;
+		color: var(--input-text-color);
 	}
 
 	.chat-input::placeholder {
-		color: #8897a2;
+		color: var(--placeholder-text-color);
 	}
 
 	.send-btn {
