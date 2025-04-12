@@ -1,53 +1,44 @@
-
-import typescript from 'rollup-plugin-typescript2';
-import { terser } from 'rollup-plugin-terser';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-import css from 'rollup-plugin-css-only';
+import { terser } from 'rollup-plugin-terser';
+import typescript from 'rollup-plugin-typescript2';
 
-// Array of component configurations
-const components = [
-  // {
-  //   name: 'ai-chat-bot',
-  //   input: 'src/components/ai-chat-bot/ai-chat-bot.ts',
-  //   css: true
-  // },
-  {
-    name: "ai-chat",
-    input: "src/components/ai-chat/index.ts",
-    css: true
-  },
-  // {
-  //   name: 'my-button',
-  //   input: 'src/components/my-button/my-button.ts',
-  //   css: false
-  // }
-  // Add other components here
-];
-
-export default components.map(component => ({
-  input: component.input,
+export default {
+  input: 'src/components/ai-chat/index.ts',
   output: [
     {
-      file: `dist/${component.name}.js`,
+      file: 'dist/ai-chat.js',
       format: 'umd',
-      name: component.name.split('-').map(s => s[0].toUpperCase() + s.slice(1)).join(''),
-      sourcemap: true
+      name: 'AiChat', // Add this line - this will be the global variable name
+      globals: {
+        'lit': 'lit',
+        'lit/decorators.js': 'litDecorators'
+      }
     },
     {
-      file: `dist/${component.name}.esm.js`,
-      format: 'esm',
-      sourcemap: true
+      file: 'dist/ai-chat.esm.js',
+      format: 'es'
     }
   ],
   plugins: [
-    resolve(),
+    resolve({
+      browser: true,
+      dedupe: ['lit', 'lit-html', 'lit-element']
+    }),
     commonjs(),
-    ...(component.css ? [css({ output: `${component.name}.css` })] : []),
+    terser({
+      format: {
+        comments: false,
+      },
+      compress: {
+        // Preserve Lit CSS template strings
+        defaults: false,
+        directives: false,
+      }
+    }),
     typescript({
       tsconfig: './tsconfig.json',
       useTsconfigDeclarationDir: true
     }),
-    terser()
   ]
-}));
+};

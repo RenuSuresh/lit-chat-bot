@@ -1,6 +1,6 @@
 {
   "name": "renu-lit-components",
-  "version": "1.0.50",
+  "version": "1.0.55",
   "description": "A UI component library built with Lit",
   "main": "dist/my-lit-components.js",
   "module": "dist/my-lit-components.esm.js",
@@ -13,32 +13,45 @@
       "import": "./dist/my-lit-components.esm.js",
       "require": "./dist/my-lit-components.js"
     },
-    "./ai-chat":{
+    "./ai-chat": {
       "import": "./dist/ai-chat.esm.js",
       "require": "./dist/ai-chat.js"
     }
   },
   "scripts": {
     "build": "rollup -c",
+    "build:dev": "rollup -c",
+    "analyze": "NODE_ENV=development rollup -c && open stats/*-stats.html",
     "prepublishOnly": "npm run build",
     "dev": "vite",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
   "dependencies": {
+    "@babel/runtime-corejs3": "^7.27.0",
     "@storybook/addon-essentials": "^8.6.12",
     "@storybook/builder-vite": "^8.6.12",
     "@storybook/web-components": "^8.6.12",
     "lit": "^2.0.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.26.10",
+    "@babel/plugin-transform-runtime": "^7.26.10",
+    "@babel/preset-env": "^7.26.9",
+    "@babel/preset-typescript": "^7.27.0",
+    "@babel/runtime": "^7.27.0",
+    "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-commonjs": "^21.0.1",
+    "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^13.1.3",
+    "@rollup/plugin-typescript": "^12.1.2",
     "@types/node": "^17.0.21",
     "rollup": "^2.70.0",
+    "rollup-plugin-analyzer": "^4.0.0",
     "rollup-plugin-css-only": "^3.1.0",
     "rollup-plugin-terser": "^7.0.2",
     "rollup-plugin-typescript2": "^0.31.2",
+    "rollup-plugin-visualizer": "^5.14.0",
     "typescript": "^4.6.2",
     "vite": "^6.2.5"
   },
