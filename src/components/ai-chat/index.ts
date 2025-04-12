@@ -78,6 +78,20 @@ export class AIChat extends LitElement {
 		);
 	}
 
+	connectedCallback() {
+		super.connectedCallback();
+		// Load header when component connects to DOM
+		this.loadHeaderComponent();
+	}
+
+	private async loadHeaderComponent() {
+		// Dynamic import with webpack chunk name comment
+		await import(
+			/* webpackChunkName: "chat-header" */
+			"./header/chat-header"
+		);
+	}
+
 	private _handlePageClose = () => {
 		this.onCloseChat?.();
 	};
@@ -191,10 +205,12 @@ export class AIChat extends LitElement {
 					--user-msg-border-color: ${this.theme.userMsgBorderColor};
 				}
 			</style>
+
 			<chat-header
 				.closeChatIcon=${this.closeChatIcon}
 				.onCloseChat=${this._handlePageClose}
 			></chat-header>
+
 			<chat-message-list
 				.messages=${this.messages}
 				.loading=${this.isLoading}

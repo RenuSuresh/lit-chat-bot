@@ -5,21 +5,12 @@ import typescript from 'rollup-plugin-typescript2';
 
 export default {
   input: 'src/components/ai-chat/index.ts',
-  output: [
-    {
-      file: 'dist/ai-chat.js',
-      format: 'umd',
-      name: 'AiChat', // Add this line - this will be the global variable name
-      globals: {
-        'lit': 'lit',
-        'lit/decorators.js': 'litDecorators'
-      }
-    },
-    {
-      file: 'dist/ai-chat.esm.js',
-      format: 'es'
-    }
-  ],
+  output: {
+    dir: 'dist',
+    format: 'es',
+    chunkFileNames: '[name]-[hash].esm.js',
+    entryFileNames: '[name].esm.js'
+  },
   plugins: [
     resolve({
       browser: true,
@@ -38,7 +29,11 @@ export default {
     }),
     typescript({
       tsconfig: './tsconfig.json',
-      useTsconfigDeclarationDir: true
+      compilerOptions: {
+        module: 'ESNext' // Important for dynamic imports
+      }
     }),
-  ]
+  ],
+  preserveModules: false,
+  treeshake: true,
 };

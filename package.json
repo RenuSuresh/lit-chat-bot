@@ -1,6 +1,6 @@
 {
   "name": "renu-lit-components",
-  "version": "1.0.55",
+  "version": "1.0.59",
   "description": "A UI component library built with Lit",
   "main": "dist/my-lit-components.js",
   "module": "dist/my-lit-components.esm.js",
@@ -10,13 +10,14 @@
   ],
   "exports": {
     ".": {
-      "import": "./dist/my-lit-components.esm.js",
-      "require": "./dist/my-lit-components.js"
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.js"
     },
     "./ai-chat": {
       "import": "./dist/ai-chat.esm.js",
       "require": "./dist/ai-chat.js"
     }
+    
   },
   "scripts": {
     "build": "rollup -c",

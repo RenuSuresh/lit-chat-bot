@@ -7,7 +7,9 @@
     "experimentalDecorators": true,
     "declaration": true,
     "outDir": "./dist",
-    "lib": ["esnext", "dom"]
+    "lib": ["esnext", "dom"],
+    "esModuleInterop": true,
+    "rootDir": "src",
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]
