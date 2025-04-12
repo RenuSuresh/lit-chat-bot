@@ -6,7 +6,6 @@ import { chatBotApi } from "../services/chat.service";
 import "./header/chat-header";
 import "./chat-message-list/chat-message-list";
 import "./chat-input/chat-input";
-import "./chat-loader/chat-loader";
 
 import { commonStyles } from "./styles.css";
 import { Theme } from "./theme.interface";
@@ -82,6 +81,7 @@ export class AIChat extends LitElement {
 		super.connectedCallback();
 		// Load header when component connects to DOM
 		this.loadHeaderComponent();
+		this.loadChatLoaderComponent();
 	}
 
 	private async loadHeaderComponent() {
@@ -89,6 +89,13 @@ export class AIChat extends LitElement {
 		await import(
 			/* webpackChunkName: "chat-header" */
 			"./header/chat-header"
+		);
+	}
+	private async loadChatLoaderComponent() {
+		// Dynamic import with webpack chunk name comment
+		await import(
+			/* webpackChunkName: "chat-loader" */
+			"./chat-loader/chat-loader"
 		);
 	}
 
