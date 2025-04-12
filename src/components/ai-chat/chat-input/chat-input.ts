@@ -1,5 +1,5 @@
 import { LitElement, html } from "lit";
-import { customElement, state } from "lit/decorators.js";
+import { customElement, property, state } from "lit/decorators.js";
 
 import { commonStyles } from "../styles.css";
 import { styles } from "./chat-input.css";
@@ -9,6 +9,11 @@ export class ChatInput extends LitElement {
 	static styles = [commonStyles, styles];
 
 	@state() private inputValue = "";
+
+	@property({ type: String }) sendMsgEnableImage: string =
+		"https://assets.pharmeasy.in/web-assets/images/icon_sendMessage.svg";
+	@property({ type: String }) sendMsgDisableImage: string =
+		"https://assets.pharmeasy.in/web-assets/images/icon_sendMessage_disable.svg";
 
 	render() {
 		return html`
@@ -26,11 +31,7 @@ export class ChatInput extends LitElement {
 					?disabled=${!this.inputValue.trim()}
 					class="send-btn"
 				>
-					<img
-						src="https://assets.pharmeasy.in/web-assets/images/icon_sendMessage.svg"
-						width="40"
-						height="40"
-					/>
+					<img src=${this.sendMsgEnableImage} width="40" height="40" />
 				</button>
 			</div>
 		`;

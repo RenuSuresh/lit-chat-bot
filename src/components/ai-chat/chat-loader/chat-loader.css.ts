@@ -16,7 +16,7 @@ export const styles = css`
 		height: 4px;
 		margin: 0 4px;
 		border-radius: 50%;
-		background-color: #3e415b; /* Change color as needed */
+		background-color: var(--loader-color);
 		animation: bounce 0.6s infinite alternate;
 	}
 
@@ -33,7 +33,7 @@ export const styles = css`
 			transform: translateY(0);
 		}
 		100% {
-			transform: translateY(-10px); /* Adjust bounce height */
+			transform: translateY(-10px);
 		}
 	}
 `;
