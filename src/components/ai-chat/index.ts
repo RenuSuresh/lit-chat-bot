@@ -1,5 +1,9 @@
 import { LitElement, html } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
+import { commonStyles } from "./styles.css";
+import { DEFAULT_IMAGES } from "./constants";
+import { withChatContext } from "./context/with-chat-context";
+import type { ChatApiBody, ChatMessage, Theme } from "./theme.interface";
 
 // Services
 import { chatBotApi } from "../services/chat.service";
@@ -9,27 +13,8 @@ import "./header/chat-header";
 import "./chat-message-list/chat-message-list";
 import "./chat-input/chat-input";
 
-// Styles and Types
-import { commonStyles } from "./styles.css";
-import { Theme } from "./theme.interface";
-import { DEFAULT_IMAGES } from "./constants";
-
-// Types
-interface ChatMessage {
-	sender: "user" | "bot";
-	text: string;
-	time: string;
-}
-
-interface ChatApiBody {
-	chatAPI: {
-		body: Record<string, unknown>;
-	};
-	customerCareNumber: string;
-}
-
 @customElement("ai-chat")
-export class AIChat extends LitElement {
+export class AIChat extends withChatContext(LitElement) {
 	static styles = [commonStyles];
 
 	// Properties
@@ -65,26 +50,15 @@ export class AIChat extends LitElement {
 		placeholderTextColor: "#8897a2",
 	};
 
-	// State
-	@state() private isLoading: boolean = false;
-	@state() private chatbotData: ChatApiBody = {
-		chatAPI: { body: {} },
-		customerCareNumber: "",
-	};
-	@state() private messages: Array<ChatMessage> = [];
-	@state() private conversationId: string =
-		"4bb91e16-7a12-44ee-9b16-25c9bddeb2da";
 	@state() private showChatInput: boolean = true;
-
-	constructor() {
-		super();
-		this.initializeSessionStorage();
-	}
 
 	// Lifecycle methods
 	connectedCallback() {
 		super.connectedCallback();
+		this.initializeSessionStorage();
 		this.loadComponents();
+		// Initialize context with theme
+		this.chatContext.updateTheme(this.theme);
 	}
 
 	// Private methods
@@ -93,29 +67,29 @@ export class AIChat extends LitElement {
 			const storedData = sessionStorage.getItem("chatbotData");
 
 			if (!storedData) {
-				// Set default data in session storage
-				const defaultData: ChatApiBody = {
+				const defaultData = {
 					chatAPI: {
 						body: {
 							inputs: {
-								user_id: "",
-								session_id: "",
-								// Add any other required default values
+								userId: "39783010",
+								parentOrderId: "525744916255784960",
 							},
+							user: "Rakesh",
 						},
+						headers: {},
+						theme: {},
 					},
 					customerCareNumber: "",
 				};
 
 				sessionStorage.setItem("chatbotData", JSON.stringify(defaultData));
-				this.chatbotData = defaultData;
+				this.chatContext.setChatbotData(defaultData);
 			} else {
-				// Parse existing data
-				this.chatbotData = JSON.parse(storedData);
+				const parsedData = JSON.parse(storedData);
+				this.chatContext.setChatbotData(parsedData);
 			}
 		} catch (error) {
-			console.error("Error initializing session storage:>>>>>>", error);
-			// Keep using the default state if there's an error
+			console.error("Error initializing session storage:", error);
 		}
 	}
 
@@ -148,72 +122,66 @@ export class AIChat extends LitElement {
 	};
 
 	private async handleSendMessage(e: CustomEvent) {
-		this.isLoading = true;
+		this.chatContext.setLoading(true);
 		const userMessage = e.detail.text;
 
-		this.addMessage({
+		// Add user message and scroll
+		this.chatContext.addMessage({
 			sender: "user",
 			text: userMessage,
 			time: this.getCurrentTime(),
 		});
+		await this.scrollToBottom();
 
 		try {
 			const response = await chatBotApi.sendMessage({
-				body: this.chatbotData.chatAPI.body,
+				body: this.chatContext.chatbotData.chatAPI.body,
 				message: userMessage,
-				conversationId: this.conversationId,
+				conversationId: this.chatContext.conversationId,
 			});
 
-			this.conversationId = response.conversation_id;
+			this.chatContext.setConversationId(response.conversation_id);
 
 			const botMessage =
 				JSON.parse(response.answer).assistantLastMessage ||
 				"Sorry, I encountered an error. Please try again.";
 
-			this.addMessage({
+			// Add bot message and scroll
+			this.chatContext.addMessage({
 				sender: "bot",
 				text: botMessage,
 				time: this.getCurrentTime(),
 			});
+			await this.scrollToBottom();
 		} catch (error) {
-			this.addMessage({
+			// Add error message and scroll
+			this.chatContext.addMessage({
 				sender: "bot",
 				text: "Sorry, I encountered an error. Please try again.",
 				time: this.getCurrentTime(),
 			});
+			await this.scrollToBottom();
 		} finally {
-			this.isLoading = false;
+			this.chatContext.setLoading(false);
 		}
 	}
 
-	private addMessage(message: ChatMessage) {
-		this.messages = [...this.messages, message];
-		this.requestUpdate();
-		this.scrollToBottom();
-	}
-
 	private async scrollToBottom() {
-		await this.updateComplete;
+		// Wait for the next frame to ensure DOM is updated
+		await new Promise((resolve) => requestAnimationFrame(resolve));
 
-		const root = this.shadowRoot;
-		if (!root) return;
-
-		const chatMessageList = root.querySelector("chat-message-list");
-		if (!chatMessageList) return;
-
-		const messageListShadow = chatMessageList.shadowRoot;
-		if (!messageListShadow) return;
-
-		const scrollContainer = messageListShadow.querySelector(".chat-container");
-		if (!scrollContainer) return;
-
-		scrollContainer.scrollTo({
-			top: scrollContainer.scrollHeight,
-			behavior: "smooth",
-		});
-
-		// Fallback for immediate scroll
-		scrollContainer.scrollTop = scrollContainer.scrollHeight;
+		// Find the chat message list and scroll it
+		const chatMessageList = this.shadowRoot?.querySelector("chat-message-list");
+		if (chatMessageList) {
+			const chatContainer =
+				chatMessageList.shadowRoot?.querySelector(".chat-container");
+			if (chatContainer) {
+				chatContainer.scrollTo({
+					top: chatContainer.scrollHeight,
+					behavior: "smooth",
+				});
+			}
+		}
 	}
 
 	private getCurrentTime(): string {
@@ -228,22 +196,25 @@ export class AIChat extends LitElement {
 		return html`
 			<style>
 				:host {
-					--font-family: ${this.theme.fontFamily};
-					--header-bg-color: ${this.theme.headerBgColor};
-					--header-title-color: ${this.theme.headerTitleColor};
-					--header-subtitle-color: ${this.theme.headerSubtitleColor};
-					--message-bg-color: ${this.theme.messageContainerBgColor};
-					--loader-color: ${this.theme.loaderColor};
-					--input-background-color: ${this.theme.inputBackgroundColor};
-					--input-border-color: ${this.theme.inputBorderColor};
-					--placeholder-text-color: ${this.theme.placeholderTextColor};
-					--input-text-color: ${this.theme.inputTextColor};
-					--bot-msg-bg-color: ${this.theme.botMsgBgColor};
-					--bot-msg-border-color: ${this.theme.botMsgBorderColor};
-					--bot-msg-text-color: ${this.theme.botMsgTextColor};
-					--user-msg-bg-color: ${this.theme.userMsgBgColor};
-					--user-msg-text-color: ${this.theme.userMsgTextColor};
-					--user-msg-border-color: ${this.theme.userMsgBorderColor};
+					--font-family: ${this.chatContext.theme.fontFamily};
+					--header-bg-color: ${this.chatContext.theme.headerBgColor};
+					--header-title-color: ${this.chatContext.theme.headerTitleColor};
+					--header-subtitle-color: ${this.chatContext.theme
+						.headerSubtitleColor};
+					--message-bg-color: ${this.chatContext.theme.messageContainerBgColor};
+					--loader-color: ${this.chatContext.theme.loaderColor};
+					--input-background-color: ${this.chatContext.theme
+						.inputBackgroundColor};
+					--input-border-color: ${this.chatContext.theme.inputBorderColor};
+					--placeholder-text-color: ${this.chatContext.theme
+						.placeholderTextColor};
+					--input-text-color: ${this.chatContext.theme.inputTextColor};
+					--bot-msg-bg-color: ${this.chatContext.theme.botMsgBgColor};
+					--bot-msg-border-color: ${this.chatContext.theme.botMsgBorderColor};
+					--bot-msg-text-color: ${this.chatContext.theme.botMsgTextColor};
+					--user-msg-bg-color: ${this.chatContext.theme.userMsgBgColor};
+					--user-msg-text-color: ${this.chatContext.theme.userMsgTextColor};
+					--user-msg-border-color: ${this.chatContext.theme.userMsgBorderColor};
 				}
 			</style>
 
@@ -252,18 +223,14 @@ export class AIChat extends LitElement {
 				.onCloseChat=${this._handlePageClose}
 			></chat-header>
 
-			<chat-message-list
-				.messages=${this.messages}
-				.loading=${this.isLoading}
-				.botImage=${this.botImage}
-			></chat-message-list>
+			<chat-message-list .botImage=${this.botImage}></chat-message-list>
 
 			${this.showChatInput
 				? html`<chat-input
 						@send-message=${this.handleSendMessage}
 				  ></chat-input>`
 				: html`<talk-to-agent
-						.phoneNumber=${this.chatbotData.customerCareNumber}
+						.phoneNumber=${this.chatContext.chatbotData.customerCareNumber}
 				  ></talk-to-agent>`}
 		`;
 	}

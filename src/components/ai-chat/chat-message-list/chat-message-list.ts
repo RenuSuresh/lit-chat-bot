@@ -4,35 +4,58 @@ import { when } from "lit/directives/when.js";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
 
 import "../timestamp-divider/timestamp-divider";
-
+import { withChatContext } from "../context/with-chat-context";
 import { commonStyles } from "../styles.css";
 import { styles } from "./chat-message-list.css";
 import { DEFAULT_IMAGES } from "../constants";
-
-interface ChatMessage {
-	sender: "user" | "bot";
-	text: string;
-	time: string;
-	meta?: {
-		userId?: string;
-		isEdited?: boolean;
-	};
-}
+import type { ChatMessage } from "../theme.interface";
 
 @customElement("chat-message-list")
-export class ChatMessageList extends LitElement {
+export class ChatMessageList extends withChatContext(LitElement) {
 	static styles = [commonStyles, styles];
 
 	@state() isNewConversation = true;
-	@property({ type: Array }) messages: ChatMessage[] = [];
-	@property({ type: Boolean }) loading: boolean = false;
 	@property({ type: String }) botImage: string = DEFAULT_IMAGES.BOT;
+
+	private chatContainer: HTMLElement | null = null;
+
+	connectedCallback() {
+		super.connectedCallback();
+	}
+
+	firstUpdated() {
+		this.chatContainer = this.shadowRoot?.querySelector(
+			".chat-container"
+		) as HTMLElement;
+		this.scrollToBottom();
+	}
+
+	updated(changedProperties: Map<string, any>) {
+		super.updated(changedProperties);
+		if (
+			changedProperties.has("chatContext") &&
+			this.chatContext.messages.length > 0
+		) {
+			this.scrollToBottom();
+		}
+	}
+
+	private scrollToBottom() {
+		requestAnimationFrame(() => {
+			if (this.chatContainer) {
+				this.chatContainer.scrollTo({
+					top: this.chatContainer.scrollHeight,
+					behavior: "smooth",
+				});
+			}
+		});
+	}
 
 	render() {
 		return html`
 			<div class="chat-container">
 				${this.renderTimestampDivider()}
-				${this.messages.map((msg) => this.renderMessage(msg))}
+				${this.chatContext.messages.map((msg) => this.renderMessage(msg))}
 				${this.renderLoadingIndicator()}
 			</div>
 		`;
@@ -74,7 +97,7 @@ export class ChatMessageList extends LitElement {
 	}
 
 	private renderLoadingIndicator() {
-		return this.loading
+		return this.chatContext.isLoading
 			? html`<div class="bot-message-container">
 					<div class="bot-message-content">
 						<img src=${this.botImage} alt="bot" width="40" height="40" />
