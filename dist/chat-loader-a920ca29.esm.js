@@ -1,4 +1,4 @@
-import{i as t,s as a,x as e,_ as d,e as i}from"./index-7d0a4296.esm.js";const n=t`
+import{i as t,s as e,x as a,_ as i,e as d}from"./index-204896b3.esm.js";const n=t`
 	:host {
 		display: inline-flex;
 	}
@@ -34,10 +34,10 @@ import{i as t,s as a,x as e,_ as d,e as i}from"./index-7d0a4296.esm.js";const n=
 			transform: translateY(-10px);
 		}
 	}
-`;let s=class t extends a{render(){return e`
+`;let s=class t extends e{render(){return a`
 			<div class="loader">
 				<div class="dot"></div>
 				<div class="dot"></div>
 				<div class="dot"></div>
 			</div>
-		`}};s.styles=n;s=d([i("loading-dots")],s);export{s as LoadingDots};
+		`}};s.styles=n;s=i([d("loading-dots")],s);export{s as LoadingDots};
