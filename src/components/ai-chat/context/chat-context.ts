@@ -9,15 +9,10 @@ class ChatContextSingleton {
 		this._context = {
 			messages: [],
 			isLoading: false,
-			conversationId: "4bb91e16-7a12-44ee-9b16-25c9bddeb2da", // Default conversation ID
+			conversationId: "",
 			chatbotData: {
 				chatAPI: {
-					body: {
-						inputs: {
-							user_id: "",
-							session_id: "",
-						},
-					},
+					body: {},
 				},
 				customerCareNumber: "",
 			},
