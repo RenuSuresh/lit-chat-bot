@@ -8,6 +8,7 @@ import "../timestamp-divider/timestamp-divider";
 import { commonStyles } from "../styles.css";
 import { styles } from "./chat-message-list.css";
 import { DEFAULT_IMAGES } from "../constants";
+import { ChatStore } from "../store/store";
 
 interface ChatMessage {
 	sender: "user" | "bot";
@@ -27,12 +28,14 @@ export class ChatMessageList extends LitElement {
 	@property({ type: Array }) messages: ChatMessage[] = [];
 	@property({ type: Boolean }) loading: boolean = false;
 	@property({ type: String }) botImage: string = DEFAULT_IMAGES.BOT;
+	@property({ attribute: false }) store!: ChatStore;
 
 	render() {
+		const state = this.store.getState();
 		return html`
 			<div class="chat-container">
 				${this.renderTimestampDivider()}
-				${this.messages.map((msg) => this.renderMessage(msg))}
+				${state.messages.map((msg) => this.renderMessage(msg))}
 				${this.renderLoadingIndicator()}
 			</div>
 		`;

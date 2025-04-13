@@ -28,6 +28,14 @@ interface ChatApiBody {
 	customerCareNumber: string;
 }
 
+import { ChatStore } from "./store/store";
+import {
+	addMessage,
+	setLoading,
+	setConversationId,
+	setChatbotData,
+} from "./store/actions";
+
 @customElement("ai-chat")
 export class AIChat extends LitElement {
 	static styles = [commonStyles];
@@ -76,46 +84,45 @@ export class AIChat extends LitElement {
 		"4bb91e16-7a12-44ee-9b16-25c9bddeb2da";
 	@state() private showChatInput: boolean = true;
 
+	private store: ChatStore;
+
 	constructor() {
 		super();
-		this.initializeSessionStorage();
+		this.store = new ChatStore(this);
 	}
 
 	// Lifecycle methods
 	connectedCallback() {
 		super.connectedCallback();
 		this.loadComponents();
+		this.initializeSessionStorage();
 	}
 
 	// Private methods
 	private initializeSessionStorage() {
 		try {
 			const storedData = sessionStorage.getItem("chatbotData");
-
-			if (!storedData) {
-				// Set default data in session storage
-				const defaultData: ChatApiBody = {
-					chatAPI: {
-						body: {
-							inputs: {
-								user_id: "",
-								session_id: "",
-								// Add any other required default values
-							},
-						},
-					},
-					customerCareNumber: "",
-				};
-
-				sessionStorage.setItem("chatbotData", JSON.stringify(defaultData));
-				this.chatbotData = defaultData;
+			if (storedData) {
+				this.store.dispatch(setChatbotData(JSON.parse(storedData)));
 			} else {
-				// Parse existing data
-				this.chatbotData = JSON.parse(storedData);
+				const chatAPI = {
+					body: {
+						inputs: {
+							userId: "39783010",
+							parentOrderId: "525744916255784960",
+						},
+						user: "Rakesh",
+					},
+					headers: {},
+					theme: {},
+				};
+				sessionStorage.setItem(
+					"chatbotData",
+					JSON.stringify({ chatAPI, conversationId: "123" })
+				);
 			}
 		} catch (error) {
-			console.error("Error initializing session storage:>>>>>>", error);
-			// Keep using the default state if there's an error
+			console.error("Error initializing session storage:", error);
 		}
 	}
 
@@ -148,46 +155,53 @@ export class AIChat extends LitElement {
 	};
 
 	private async handleSendMessage(e: CustomEvent) {
-		this.isLoading = true;
+		this.store.dispatch(setLoading(true));
 		const userMessage = e.detail.text;
 
-		this.addMessage({
-			sender: "user",
-			text: userMessage,
-			time: this.getCurrentTime(),
-		});
+		this.store.dispatch(
+			addMessage({
+				sender: "user",
+				text: userMessage,
+				time: this.getCurrentTime(),
+			})
+		);
 
 		try {
+			const state = this.store.getState();
 			const response = await chatBotApi.sendMessage({
-				body: this.chatbotData.chatAPI.body,
+				body: state.chatbotData.chatAPI.body,
 				message: userMessage,
-				conversationId: this.conversationId,
+				conversationId: state.conversationId,
 			});
 
-			this.conversationId = response.conversation_id;
+			this.store.dispatch(setConversationId(response.conversation_id));
 
 			const botMessage =
 				JSON.parse(response.answer).assistantLastMessage ||
 				"Sorry, I encountered an error. Please try again.";
 
-			this.addMessage({
-				sender: "bot",
-				text: botMessage,
-				time: this.getCurrentTime(),
-			});
+			this.store.dispatch(
+				addMessage({
+					sender: "bot",
+					text: botMessage,
+					time: this.getCurrentTime(),
+				})
+			);
 		} catch (error) {
-			this.addMessage({
-				sender: "bot",
-				text: "Sorry, I encountered an error. Please try again.",
-				time: this.getCurrentTime(),
-			});
+			this.store.dispatch(
+				addMessage({
+					sender: "bot",
+					text: "Sorry, I encountered an error. Please try again.",
+					time: this.getCurrentTime(),
+				})
+			);
 		} finally {
-			this.isLoading = false;
+			this.store.dispatch(setLoading(false));
 		}
 	}
 
 	private addMessage(message: ChatMessage) {
-		this.messages = [...this.messages, message];
+		this.store.dispatch(addMessage(message));
 		this.requestUpdate();
 		this.scrollToBottom();
 	}
@@ -225,6 +239,8 @@ export class AIChat extends LitElement {
 
 	// Render methods
 	render() {
+		const state = this.store.getState();
+		console.log("state>>>>>", state);
 		return html`
 			<style>
 				:host {
@@ -253,17 +269,18 @@ export class AIChat extends LitElement {
 			></chat-header>
 
 			<chat-message-list
-				.messages=${this.messages}
-				.loading=${this.isLoading}
+				.messages=${state.messages}
+				.loading=${state.isLoading}
 				.botImage=${this.botImage}
+				.store=${this.store}
 			></chat-message-list>
 
-			${this.showChatInput
+			${state.showChatInput
 				? html`<chat-input
 						@send-message=${this.handleSendMessage}
 				  ></chat-input>`
 				: html`<talk-to-agent
-						.phoneNumber=${this.chatbotData.customerCareNumber}
+						.phoneNumber=${state.chatbotData.customerCareNumber}
 				  ></talk-to-agent>`}
 		`;
 	}
