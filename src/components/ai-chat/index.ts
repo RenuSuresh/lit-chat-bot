@@ -1,201 +1,143 @@
 import { LitElement, html } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 
+// Services
 import { chatBotApi } from "../services/chat.service";
 
+// Components
 import "./header/chat-header";
 import "./chat-message-list/chat-message-list";
 import "./chat-input/chat-input";
 
+// Styles and Types
 import { commonStyles } from "./styles.css";
 import { Theme } from "./theme.interface";
+
+// Types
+interface ChatMessage {
+	sender: "user" | "bot";
+	text: string;
+	time: string;
+}
+
+interface ChatApiBody {
+	chatAPI: {
+		body: Record<string, unknown>;
+	};
+	customerCareNumber: string;
+}
 
 @customElement("ai-chat")
 export class AIChat extends LitElement {
 	static styles = [commonStyles];
 
-	@property({ type: Object }) apiBody: any;
+	// Properties
+	@property({ type: Object }) apiBody!: ChatApiBody;
 	@property({ type: String }) botImage: string = "";
 	@property({ type: String }) sendMsgEnableImage: string = "";
 	@property({ type: String }) sendMsgDisableImage: string = "";
 	@property({ type: String }) closeChatIcon: string =
 		"https://assets.pharmeasy.in/web-assets/images/ic_close.svg";
 	@property({ attribute: false }) onCloseChat?: () => void;
+	@property({ type: Boolean, attribute: "show-close-button" }) showCloseButton =
+		false;
+	@property({ type: String, attribute: "button-label" }) buttonLabel = "Close";
 
-	@property({ type: Boolean, attribute: "show-close-button" })
-	showCloseButton = false;
-	@property({ type: String, attribute: "button-label" })
-	buttonLabel = "Close";
-
+	// Theme configuration
 	@property({ type: Object }) theme: Theme = {
 		fontFamily: "Inter, sans-serif",
-
 		headerBgColor: "#3e415b",
 		headerTitleColor: "#ffffff",
 		headerSubtitleColor: "#f5f8fc",
-
 		messageContainerBgColor: "#ffffff",
 		loaderColor: "#3e415b",
-
 		botMsgBgColor: "#ffffff",
 		botMsgBorderColor: "#e6ebf4",
 		botMsgTextColor: "#30363c",
-
 		userMsgBgColor: "#EBF2FF",
 		userMsgTextColor: "#30363c",
 		userMsgBorderColor: "#B5CDF7",
-
 		inputBackgroundColor: "#ebf2ff",
 		inputBorderColor: "#e6ebf4",
 		inputTextColor: "#30363c",
 		placeholderTextColor: "#8897a2",
 	};
 
+	// State
 	@state() private isLoading: boolean = false;
-
-	@state() private chatbotData: any = {};
-
-	@state() private messages: Array<ChatMessage> = [
-		{
-			sender: "bot",
-			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
-			time: this.getCurrentTime(),
-		},
-		{
-			sender: "user",
-			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
-			time: this.getCurrentTime(),
-		},
-		{
-			sender: "bot",
-			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
-			time: this.getCurrentTime(),
-		},
-		{
-			sender: "user",
-			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
-			time: this.getCurrentTime(),
-		},
-		{
-			sender: "bot",
-			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
-			time: this.getCurrentTime(),
-		},
-		{
-			sender: "user",
-			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
-			time: this.getCurrentTime(),
-		},
-		{
-			sender: "bot",
-			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
-			time: this.getCurrentTime(),
-		},
-		{
-			sender: "user",
-			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
-			time: this.getCurrentTime(),
-		},
-		{
-			sender: "bot",
-			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
-			time: this.getCurrentTime(),
-		},
-		{
-			sender: "user",
-			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
-			time: this.getCurrentTime(),
-		},
-		{
-			sender: "bot",
-			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
-			time: this.getCurrentTime(),
-		},
-		{
-			sender: "user",
-			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
-			time: this.getCurrentTime(),
-		},
-		{
-			sender: "bot",
-			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
-			time: this.getCurrentTime(),
-		},
-		{
-			sender: "user",
-			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
-			time: this.getCurrentTime(),
-		},
-		{
-			sender: "bot",
-			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
-			time: this.getCurrentTime(),
-		},
-		{
-			sender: "user",
-			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
-			time: this.getCurrentTime(),
-		},
-		{
-			sender: "bot",
-			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
-			time: this.getCurrentTime(),
-		},
-		{
-			sender: "user",
-			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
-			time: this.getCurrentTime(),
-		},
-		{
-			sender: "bot",
-			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
-			time: this.getCurrentTime(),
-		},
-		{
-			sender: "user",
-			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
-			time: this.getCurrentTime(),
-		},
-	];
-
-	@state() private conversationId: string = "";
-	@state() private showChatInput: boolean = false;
+	@state() private chatbotData: ChatApiBody = {
+		chatAPI: { body: {} },
+		customerCareNumber: "",
+	};
+	@state() private messages: Array<ChatMessage> = [];
+	@state() private conversationId: string =
+		"4bb91e16-7a12-44ee-9b16-25c9bddeb2da";
+	@state() private showChatInput: boolean = true;
 
 	constructor() {
 		super();
-		this.chatbotData = JSON.parse(
-			sessionStorage.getItem("chatbotData") || "{}"
-		);
+		this.initializeSessionStorage();
 	}
 
+	// Lifecycle methods
 	connectedCallback() {
 		super.connectedCallback();
-		// Load header when component connects to DOM
-		this.loadHeaderComponent();
-		this.loadChatLoaderComponent();
-		this.loadTalkToAgentComponent();
+		this.loadComponents();
+	}
+
+	// Private methods
+	private initializeSessionStorage() {
+		try {
+			const storedData = sessionStorage.getItem("chatbotData");
+
+			if (!storedData) {
+				// Set default data in session storage
+				const defaultData: ChatApiBody = {
+					chatAPI: {
+						body: {
+							inputs: {
+								user_id: "",
+								session_id: "",
+								// Add any other required default values
+							},
+						},
+					},
+					customerCareNumber: "",
+				};
+
+				sessionStorage.setItem("chatbotData", JSON.stringify(defaultData));
+				this.chatbotData = defaultData;
+			} else {
+				// Parse existing data
+				this.chatbotData = JSON.parse(storedData);
+			}
+		} catch (error) {
+			console.error("Error initializing session storage:>>>>>>", error);
+			// Keep using the default state if there's an error
+		}
+	}
+
+	private async loadComponents() {
+		await Promise.all([
+			this.loadHeaderComponent(),
+			this.loadChatLoaderComponent(),
+			this.loadTalkToAgentComponent(),
+		]);
 	}
 
 	private async loadHeaderComponent() {
-		// Dynamic import with webpack chunk name comment
-		await import(
-			/* webpackChunkName: "chat-header" */
-			"./header/chat-header"
-		);
+		await import(/* webpackChunkName: "chat-header" */ "./header/chat-header");
 	}
+
 	private async loadChatLoaderComponent() {
-		// Dynamic import with webpack chunk name comment
 		await import(
-			/* webpackChunkName: "chat-loader" */
-			"./chat-loader/chat-loader"
+			/* webpackChunkName: "chat-loader" */ "./chat-loader/chat-loader"
 		);
 	}
 
 	private async loadTalkToAgentComponent() {
-		// Dynamic import with webpack chunk name comment
 		await import(
-			/* webpackChunkName: "talk-to-agent" */
-			"./talk-to-agent/talk-to-agent"
+			/* webpackChunkName: "talk-to-agent" */ "./talk-to-agent/talk-to-agent"
 		);
 	}
 
@@ -206,6 +148,7 @@ export class AIChat extends LitElement {
 	private async handleSendMessage(e: CustomEvent) {
 		this.isLoading = true;
 		const userMessage = e.detail.text;
+
 		this.addMessage({
 			sender: "user",
 			text: userMessage,
@@ -213,14 +156,12 @@ export class AIChat extends LitElement {
 		});
 
 		try {
-			// Send the message without the conversation ID initially
 			const response = await chatBotApi.sendMessage({
 				body: this.chatbotData.chatAPI.body,
 				message: userMessage,
 				conversationId: this.conversationId,
 			});
 
-			// Store the conversation ID from the response
 			this.conversationId = response.conversation_id;
 
 			const botMessage =
@@ -250,26 +191,20 @@ export class AIChat extends LitElement {
 	}
 
 	private async scrollToBottom() {
-		// Wait for Lit to finish rendering
 		await this.updateComplete;
 
-		// Find the chat container by piercing through shadow DOM
 		const root = this.shadowRoot;
 		if (!root) return;
 
-		// First try to find chat-message-list component
 		const chatMessageList = root.querySelector("chat-message-list");
 		if (!chatMessageList) return;
 
-		// Get its shadow root
 		const messageListShadow = chatMessageList.shadowRoot;
 		if (!messageListShadow) return;
 
-		// Find the actual scrollable container
 		const scrollContainer = messageListShadow.querySelector(".chat-container");
 		if (!scrollContainer) return;
 
-		// Perform the scroll with smooth behavior
 		scrollContainer.scrollTo({
 			top: scrollContainer.scrollHeight,
 			behavior: "smooth",
@@ -286,6 +221,7 @@ export class AIChat extends LitElement {
 		});
 	}
 
+	// Render methods
 	render() {
 		return html`
 			<style>
@@ -294,19 +230,15 @@ export class AIChat extends LitElement {
 					--header-bg-color: ${this.theme.headerBgColor};
 					--header-title-color: ${this.theme.headerTitleColor};
 					--header-subtitle-color: ${this.theme.headerSubtitleColor};
-
 					--message-bg-color: ${this.theme.messageContainerBgColor};
 					--loader-color: ${this.theme.loaderColor};
-
 					--input-background-color: ${this.theme.inputBackgroundColor};
 					--input-border-color: ${this.theme.inputBorderColor};
 					--placeholder-text-color: ${this.theme.placeholderTextColor};
 					--input-text-color: ${this.theme.inputTextColor};
-
 					--bot-msg-bg-color: ${this.theme.botMsgBgColor};
 					--bot-msg-border-color: ${this.theme.botMsgBorderColor};
 					--bot-msg-text-color: ${this.theme.botMsgTextColor};
-
 					--user-msg-bg-color: ${this.theme.userMsgBgColor};
 					--user-msg-text-color: ${this.theme.userMsgTextColor};
 					--user-msg-border-color: ${this.theme.userMsgBorderColor};
@@ -323,6 +255,7 @@ export class AIChat extends LitElement {
 				.loading=${this.isLoading}
 				.botImage=${this.botImage}
 			></chat-message-list>
+
 			${this.showChatInput
 				? html`<chat-input
 						@send-message=${this.handleSendMessage}
@@ -332,10 +265,4 @@ export class AIChat extends LitElement {
 				  ></talk-to-agent>`}
 		`;
 	}
-}
-
-interface ChatMessage {
-	sender: "user" | "bot";
-	text: string;
-	time: string;
 }
