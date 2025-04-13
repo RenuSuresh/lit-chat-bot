@@ -3,9 +3,15 @@ import "./header/chat-header";
 import "./chat-message-list/chat-message-list";
 import "./chat-input/chat-input";
 import { Theme } from "./theme.interface";
+interface ChatApiBody {
+    chatAPI: {
+        body: Record<string, unknown>;
+    };
+    customerCareNumber: string;
+}
 export declare class AIChat extends LitElement {
     static styles: import("lit").CSSResult[];
-    apiBody: any;
+    apiBody: ChatApiBody;
     botImage: string;
     sendMsgEnableImage: string;
     sendMsgDisableImage: string;
@@ -21,6 +27,8 @@ export declare class AIChat extends LitElement {
     private showChatInput;
     constructor();
     connectedCallback(): void;
+    private initializeSessionStorage;
+    private loadComponents;
     private loadHeaderComponent;
     private loadChatLoaderComponent;
     private loadTalkToAgentComponent;
@@ -31,3 +39,4 @@ export declare class AIChat extends LitElement {
     private getCurrentTime;
     render(): import("lit-html").TemplateResult<1>;
 }
+export {};

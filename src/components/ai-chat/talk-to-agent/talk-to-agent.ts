@@ -3,16 +3,17 @@ import { customElement, property } from "lit/decorators.js";
 
 import { commonStyles } from "../styles.css";
 import { styles } from "./talk-to-agent.css";
+import { DEFAULT_IMAGES, DEFAULT_VALUES } from "../constants";
 
 @customElement("talk-to-agent")
 export class TalkToAgent extends LitElement {
 	static styles = [commonStyles, styles];
 
-	@property({ type: String })
-	customerCareNumber: string = "+917666100300";
+	@property({ type: String }) phoneNumber: string =
+		DEFAULT_VALUES.CUSTOMER_CARE_NUMBER;
 
 	private handleClick() {
-		window.location.href = `tel:${this.customerCareNumber}`;
+		window.location.href = `tel:${this.phoneNumber}`;
 	}
 
 	render() {
@@ -20,7 +21,7 @@ export class TalkToAgent extends LitElement {
 			<div class="talk-to-agent-container">
 				<button class="talk-to-agent-button" @click=${this.handleClick}>
 					<img
-						src="https://assets.pharmeasy.in/web-assets/images/callPhoneFilledWhite.svg"
+						src=${DEFAULT_IMAGES.PHONE}
 						alt="Talk to our agent"
 						width="24"
 						height="24"

@@ -12,6 +12,7 @@ import "./chat-input/chat-input";
 // Styles and Types
 import { commonStyles } from "./styles.css";
 import { Theme } from "./theme.interface";
+import { DEFAULT_IMAGES } from "./constants";
 
 // Types
 interface ChatMessage {
@@ -33,11 +34,12 @@ export class AIChat extends LitElement {
 
 	// Properties
 	@property({ type: Object }) apiBody!: ChatApiBody;
-	@property({ type: String }) botImage: string = "";
-	@property({ type: String }) sendMsgEnableImage: string = "";
-	@property({ type: String }) sendMsgDisableImage: string = "";
-	@property({ type: String }) closeChatIcon: string =
-		"https://assets.pharmeasy.in/web-assets/images/ic_close.svg";
+	@property({ type: String }) botImage: string = DEFAULT_IMAGES.BOT;
+	@property({ type: String }) sendMsgEnableImage: string =
+		DEFAULT_IMAGES.SEND_MESSAGE_ENABLE;
+	@property({ type: String }) sendMsgDisableImage: string =
+		DEFAULT_IMAGES.SEND_MESSAGE_DISABLE;
+	@property({ type: String }) closeChatIcon: string = DEFAULT_IMAGES.CLOSE_CHAT;
 	@property({ attribute: false }) onCloseChat?: () => void;
 	@property({ type: Boolean, attribute: "show-close-button" }) showCloseButton =
 		false;
