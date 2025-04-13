@@ -18,10 +18,12 @@ export declare class AIChat extends LitElement {
     private chatbotData;
     private messages;
     private conversationId;
+    private showChatInput;
     constructor();
     connectedCallback(): void;
     private loadHeaderComponent;
     private loadChatLoaderComponent;
+    private loadTalkToAgentComponent;
     private _handlePageClose;
     private handleSendMessage;
     private addMessage;

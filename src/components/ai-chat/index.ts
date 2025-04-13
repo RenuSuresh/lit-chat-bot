@@ -1,4 +1,4 @@
-import { LitElement, html, nothing } from "lit";
+import { LitElement, html } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 
 import { chatBotApi } from "../services/chat.service";
@@ -66,9 +66,100 @@ export class AIChat extends LitElement {
 			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
 			time: this.getCurrentTime(),
 		},
+		{
+			sender: "bot",
+			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
+			time: this.getCurrentTime(),
+		},
+		{
+			sender: "user",
+			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
+			time: this.getCurrentTime(),
+		},
+		{
+			sender: "bot",
+			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
+			time: this.getCurrentTime(),
+		},
+		{
+			sender: "user",
+			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
+			time: this.getCurrentTime(),
+		},
+		{
+			sender: "bot",
+			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
+			time: this.getCurrentTime(),
+		},
+		{
+			sender: "user",
+			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
+			time: this.getCurrentTime(),
+		},
+		{
+			sender: "bot",
+			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
+			time: this.getCurrentTime(),
+		},
+		{
+			sender: "user",
+			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
+			time: this.getCurrentTime(),
+		},
+		{
+			sender: "bot",
+			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
+			time: this.getCurrentTime(),
+		},
+		{
+			sender: "user",
+			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
+			time: this.getCurrentTime(),
+		},
+		{
+			sender: "bot",
+			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
+			time: this.getCurrentTime(),
+		},
+		{
+			sender: "user",
+			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
+			time: this.getCurrentTime(),
+		},
+		{
+			sender: "bot",
+			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
+			time: this.getCurrentTime(),
+		},
+		{
+			sender: "user",
+			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
+			time: this.getCurrentTime(),
+		},
+		{
+			sender: "bot",
+			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
+			time: this.getCurrentTime(),
+		},
+		{
+			sender: "user",
+			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
+			time: this.getCurrentTime(),
+		},
+		{
+			sender: "bot",
+			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
+			time: this.getCurrentTime(),
+		},
+		{
+			sender: "user",
+			text: "Hi Manthan, I am easybot. I am here to help you with your concern",
+			time: this.getCurrentTime(),
+		},
 	];
 
 	@state() private conversationId: string = "";
+	@state() private showChatInput: boolean = false;
 
 	constructor() {
 		super();
@@ -82,6 +173,7 @@ export class AIChat extends LitElement {
 		// Load header when component connects to DOM
 		this.loadHeaderComponent();
 		this.loadChatLoaderComponent();
+		this.loadTalkToAgentComponent();
 	}
 
 	private async loadHeaderComponent() {
@@ -96,6 +188,14 @@ export class AIChat extends LitElement {
 		await import(
 			/* webpackChunkName: "chat-loader" */
 			"./chat-loader/chat-loader"
+		);
+	}
+
+	private async loadTalkToAgentComponent() {
+		// Dynamic import with webpack chunk name comment
+		await import(
+			/* webpackChunkName: "talk-to-agent" */
+			"./talk-to-agent/talk-to-agent"
 		);
 	}
 
@@ -223,7 +323,13 @@ export class AIChat extends LitElement {
 				.loading=${this.isLoading}
 				.botImage=${this.botImage}
 			></chat-message-list>
-			<chat-input @send-message=${this.handleSendMessage}></chat-input>
+			${this.showChatInput
+				? html`<chat-input
+						@send-message=${this.handleSendMessage}
+				  ></chat-input>`
+				: html`<talk-to-agent
+						.phoneNumber=${this.chatbotData.customerCareNumber}
+				  ></talk-to-agent>`}
 		`;
 	}
 }
