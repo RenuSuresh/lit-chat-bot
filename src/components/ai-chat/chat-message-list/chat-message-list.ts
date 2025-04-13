@@ -7,6 +7,7 @@ import "../timestamp-divider/timestamp-divider";
 
 import { commonStyles } from "../styles.css";
 import { styles } from "./chat-message-list.css";
+import { DEFAULT_IMAGES } from "../constants";
 
 interface ChatMessage {
 	sender: "user" | "bot";
@@ -25,8 +26,7 @@ export class ChatMessageList extends LitElement {
 	@state() isNewConversation = true;
 	@property({ type: Array }) messages: ChatMessage[] = [];
 	@property({ type: Boolean }) loading: boolean = false;
-	@property({ type: String }) botImage: string =
-		"https://assets.pharmeasy.in/web-assets/images/image_chatbot.png";
+	@property({ type: String }) botImage: string = DEFAULT_IMAGES.BOT;
 
 	render() {
 		return html`

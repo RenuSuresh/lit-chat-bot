@@ -3,8 +3,9 @@ import { css } from "lit";
 export const styles = css`
 	.header {
 		background-color: var(--header-bg-color);
-		padding: 8px;
+		padding: 8px 16px;
 		display: flex;
+		align-items: center;
 	}
 
 	.chat-title-container {
