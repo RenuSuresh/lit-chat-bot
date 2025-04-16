@@ -1,4 +1,4 @@
-import{i as t,s as e,x as a,_ as i,e as d}from"./index-204896b3.esm.js";const n=t`
+import{i as t,s as a,x as e,_ as i,e as d}from"./index-477433a9.esm.js";const n=t`
 	:host {
 		display: inline-flex;
 	}
@@ -34,7 +34,7 @@ import{i as t,s as e,x as a,_ as i,e as d}from"./index-204896b3.esm.js";const n=
 			transform: translateY(-10px);
 		}
 	}
-`;let s=class t extends e{render(){return a`
+`;let s=class t extends a{render(){return e`
 			<div class="loader">
 				<div class="dot"></div>
 				<div class="dot"></div>
