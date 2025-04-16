@@ -4,50 +4,77 @@ import { customElement, property } from "lit/decorators.js";
 @customElement("feedback-content")
 export class FeedbackContent extends LitElement {
 	static styles = css`
+		:host {
+			display: block;
+			text-align: center;
+		}
+
 		.title {
-			font-size: 18px;
 			font-weight: 600;
-			margin-bottom: 8px;
-			color: #333;
+			font-size: 14px;
+			line-height: 22px;
+			color: #30363c;
 		}
 
 		.subtitle {
 			font-size: 14px;
-			color: #666;
-			margin-bottom: 24px;
-		}
-
-		.submit-button {
-			width: 100%;
-			padding: 12px;
-			background: #3e415b;
-			color: white;
-			border: none;
-			border-radius: 8px;
-			font-weight: 500;
-			margin-top: 16px;
-			cursor: pointer;
+			color: #666666;
+			margin-bottom: 32px;
 		}
 
 		.stars {
 			display: flex;
 			justify-content: center;
-			gap: 12px;
-			margin: 20px 0;
+			gap: 16px;
+			margin: 20px 0 32px;
 		}
 
 		.star {
-			font-size: 28px;
+			width: 40px;
+			height: 40px;
 			background: none;
-			border: none;
-			color: #e0e0e0;
+			border: 2px solid #e0e0e0;
+			border-radius: 50%;
+			padding: 8px;
 			cursor: pointer;
 			transition: all 0.2s;
-			padding: 0 4px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.star svg {
+			width: 24px;
+			height: 24px;
+			fill: none;
+			stroke: #e0e0e0;
+			stroke-width: 2;
 		}
 
 		.star.selected {
-			color: #ffc107;
+			border-color: #4caf50;
+		}
+
+		.star.selected svg {
+			fill: #4caf50;
+			stroke: #4caf50;
+		}
+
+		.submit-button {
+			width: 100%;
+			padding: 16px;
+			background: #4caf50;
+			color: white;
+			border: none;
+			border-radius: 8px;
+			font-weight: 500;
+			font-size: 16px;
+			cursor: pointer;
+			opacity: 0.5;
+		}
+
+		.submit-button:not([disabled]) {
+			opacity: 1;
 		}
 	`;
 
@@ -79,7 +106,11 @@ export class FeedbackContent extends LitElement {
 							class="star ${this.rating >= star ? "selected" : ""}"
 							@click=${() => this.handleStarClick(star)}
 						>
-							★
+							<svg viewBox="0 0 24 24">
+								<path
+									d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+								/>
+							</svg>
 						</button>
 					`
 				)}

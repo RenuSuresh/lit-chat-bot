@@ -1,5 +1,6 @@
 import { LitElement, html, css } from "lit";
 import { customElement, property } from "lit/decorators.js";
+import { when } from "lit/directives/when.js";
 
 @customElement("base-drawer")
 export class BaseDrawer extends LitElement {
@@ -8,38 +9,90 @@ export class BaseDrawer extends LitElement {
 			display: contents;
 		}
 
-		.drawer-container {
+		.drawer-wrapper {
 			position: fixed;
 			bottom: 0;
 			left: 0;
 			right: 0;
-			background: white;
-			border-radius: 16px 16px 0 0;
-			padding: 24px;
-			box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-			transform: translateY(100%);
-			transition: transform 0.3s ease-out;
 			z-index: 1000;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
 		}
 
-		:host([open]) .drawer-container {
+		.drawer-content {
+			width: 100%;
 			transform: translateY(0);
+			animation: slideIn 0.3s ease-out;
+		}
+
+		.close-button-wrapper {
+			position: absolute;
+			top: -48px;
+			left: 50%;
+			transform: translateX(-50%);
+			z-index: 1001;
+			background: transparent;
+			padding: 8px;
+			border-radius: 50%;
 		}
 
 		.close-button {
-			position: absolute;
-			top: 16px;
-			right: 16px;
-			background: none;
+			width: 32px;
+			height: 32px;
+			background: white;
 			border: none;
-			font-size: 20px;
+			border-radius: 50%;
 			cursor: pointer;
-			color: #999;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 20px;
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+			color: #666;
+		}
+
+		.close-button:hover {
+			transform: scale(1.05);
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+		}
+
+		.drawer-container {
+			background: white;
+			border-radius: 24px 24px 0 0;
+			padding: 24px;
+			box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+			position: relative;
+		}
+
+		@keyframes slideIn {
+			from {
+				transform: translateY(100%);
+			}
+			to {
+				transform: translateY(0);
+			}
+		}
+
+		@keyframes slideOut {
+			from {
+				transform: translateY(0);
+			}
+			to {
+				transform: translateY(100%);
+			}
+		}
+
+		.drawer-content.closing {
+			animation: slideOut 0.3s ease-out;
 		}
 	`;
 
 	@property({ type: Boolean, reflect: true })
 	open = false;
+
+	@property({ type: Boolean })
+	private isClosing = false;
 
 	private backdrop: HTMLDivElement | null = null;
 
@@ -79,8 +132,13 @@ export class BaseDrawer extends LitElement {
 	}
 
 	private handleClose() {
-		this.open = false;
-		this.dispatchEvent(new CustomEvent("close"));
+		this.isClosing = true;
+		// Wait for animation to complete before actually closing
+		setTimeout(() => {
+			this.isClosing = false;
+			this.open = false;
+			this.dispatchEvent(new CustomEvent("close"));
+		}, 300); // Match animation duration
 	}
 
 	private addBackdrop() {
@@ -125,10 +183,24 @@ export class BaseDrawer extends LitElement {
 
 	render() {
 		return html`
-			<div class="drawer-container">
-				<button class="close-button" @click=${this.handleClose}>×</button>
-				<slot></slot>
-			</div>
+			${when(
+				this.open || this.isClosing,
+				() => html`
+					<div class="drawer-wrapper">
+						<div class="drawer-content ${this.isClosing ? "closing" : ""}">
+							<div class="close-button-wrapper">
+								<button class="close-button" @click=${this.handleClose}>
+									×
+								</button>
+							</div>
+							<div class="drawer-container">
+								<slot></slot>
+							</div>
+						</div>
+					</div>
+				`,
+				() => html``
+			)}
 		`;
 	}
 }
