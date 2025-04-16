@@ -14,28 +14,29 @@ export class FeedbackContent extends LitElement {
 			font-size: 14px;
 			line-height: 22px;
 			color: #30363c;
+			padding-bottom: 4px;
 		}
 
 		.subtitle {
-			font-size: 14px;
-			color: #666666;
-			margin-bottom: 32px;
+			font-weight: 400;
+			font-size: 12px;
+			line-height: 18px;
+			text-align: center;
+			color: #4f585e;
 		}
 
 		.stars {
 			display: flex;
 			justify-content: center;
-			gap: 16px;
-			margin: 20px 0 32px;
+			gap: 8px;
+			margin: 24px 0;
 		}
 
 		.star {
-			width: 40px;
-			height: 40px;
+			width: 50px;
+			height: 50px;
 			background: none;
-			border: 2px solid #e0e0e0;
-			border-radius: 50%;
-			padding: 8px;
+			border: none;
 			cursor: pointer;
 			transition: all 0.2s;
 			display: flex;
@@ -44,37 +45,40 @@ export class FeedbackContent extends LitElement {
 		}
 
 		.star svg {
-			width: 24px;
-			height: 24px;
+			width: 34px;
+			height: 34px;
 			fill: none;
-			stroke: #e0e0e0;
+			stroke: #8897a2;
 			stroke-width: 2;
 		}
 
 		.star.selected {
-			border-color: #4caf50;
+			border-color: #f5b326;
 		}
 
 		.star.selected svg {
-			fill: #4caf50;
-			stroke: #4caf50;
+			fill: #f5b326;
+			stroke: #f5b326;
 		}
 
 		.submit-button {
 			width: 100%;
-			padding: 16px;
-			background: #4caf50;
-			color: white;
+			background-color: #6e787e;
 			border: none;
 			border-radius: 8px;
-			font-weight: 500;
-			font-size: 16px;
-			cursor: pointer;
-			opacity: 0.5;
+			font-weight: 600;
+			font-size: 14px;
+			line-height: 24px;
+			text-align: center;
+			color: #ffffff;
+			font-family: var(--font-family);
+			height: 40px;
 		}
 
 		.submit-button:not([disabled]) {
 			opacity: 1;
+			background: #10847e;
+			border: 1.5px solid #10847e;
 		}
 	`;
 
@@ -106,9 +110,17 @@ export class FeedbackContent extends LitElement {
 							class="star ${this.rating >= star ? "selected" : ""}"
 							@click=${() => this.handleStarClick(star)}
 						>
-							<svg viewBox="0 0 24 24">
+							<svg
+								width="36"
+								height="34"
+								viewBox="0 0 36 34"
+								fill="none"
+								xmlns="http://www.w3.org/2000/svg"
+							>
 								<path
-									d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+									d="M17.9999 1.15002L23.1499 11.5834L34.6666 13.2667L26.3333 21.3834L28.2999 32.85L17.9999 27.4334L7.69992 32.85L9.66659 21.3834L1.33325 13.2667L12.8499 11.5834L17.9999 1.15002Z"
+									stroke-linecap="round"
+									stroke-linejoin="round"
 								/>
 							</svg>
 						</button>

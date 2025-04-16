@@ -28,12 +28,11 @@ export class BaseDrawer extends LitElement {
 
 		.close-button-wrapper {
 			position: absolute;
-			top: -48px;
+			top: -50px;
 			left: 50%;
 			transform: translateX(-50%);
 			z-index: 1001;
 			background: transparent;
-			padding: 8px;
 			border-radius: 50%;
 		}
 
@@ -60,7 +59,7 @@ export class BaseDrawer extends LitElement {
 		.drawer-container {
 			background: white;
 			border-radius: 24px 24px 0 0;
-			padding: 24px;
+			padding: 24px 16px;
 			box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
 			position: relative;
 		}
