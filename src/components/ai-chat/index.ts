@@ -53,7 +53,7 @@ export class AIChat extends withChatContext(LitElement) {
 
 	@state() private showChatInput: boolean = true;
 
-	@state() private showFeedbackDrawer = true;
+	@state() private showFeedbackDrawer = false;
 
 	@state() private rating: number = 0;
 

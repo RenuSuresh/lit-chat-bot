@@ -80,12 +80,45 @@ export class FeedbackContent extends LitElement {
 			background: #10847e;
 			border: 1.5px solid #10847e;
 		}
+
+		/* Thank you screen styles */
+		.thank-you-container {
+			text-align: center;
+		}
+
+		.thank-you-icon {
+			width: 83px;
+			height: 69px;
+			margin-bottom: 16px;
+			color: #4caf50;
+		}
+
+		.thank-you-title {
+			font-weight: 700;
+			font-size: 22px;
+			line-height: 28px;
+			text-align: center;
+			color: #30363c;
+			margin-bottom: 4px;
+		}
+
+		.thank-you-message {
+			font-weight: 400;
+			font-size: 14px;
+			line-height: 20px;
+			text-align: center;
+			color: #30363c;
+		}
 	`;
 
 	@property({ type: Number })
 	rating = 0;
 
+	@property({ type: Boolean })
+	submitted = true;
+
 	private handleSubmit() {
+		this.submitted = true;
 		this.dispatchEvent(new CustomEvent("submit", { detail: this.rating }));
 	}
 
@@ -96,7 +129,24 @@ export class FeedbackContent extends LitElement {
 		);
 	}
 
-	render() {
+	private renderThankYou() {
+		return html`
+			<div class="thank-you-container">
+				<img
+					src="https://assets.pharmeasy.in/web-assets/images/image_feedback_chatbot.png"
+					alt="Thank you"
+					class="thank-you-icon"
+				/>
+				<div class="thank-you-title">Thank You for feedback!</div>
+				<div class="thank-you-message">
+					Your feedback helps us to<br />
+					improve our experience
+				</div>
+			</div>
+		`;
+	}
+
+	private renderFeedbackForm() {
 		return html`
 			<div class="title">Please rate your experience with us</div>
 			<div class="subtitle">
@@ -136,5 +186,9 @@ export class FeedbackContent extends LitElement {
 				Submit Feedback
 			</button>
 		`;
+	}
+
+	render() {
+		return this.submitted ? this.renderThankYou() : this.renderFeedbackForm();
 	}
 }
