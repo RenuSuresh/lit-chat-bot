@@ -15,12 +15,8 @@ export class FeedbackBottomSheet extends LitElement {
 	submitted = false;
 
 	private handleClose() {
-		// Reset state when closing
-		setTimeout(() => {
-			this.submitted = false;
-			this.rating = 0;
-		}, 300); // Wait for close animation
-
+		this.submitted = false;
+		this.rating = 0;
 		this.open = false;
 		this.dispatchEvent(new CustomEvent("close"));
 	}
