@@ -58,7 +58,8 @@ export class AIChat extends withChatContext(LitElement) {
 	@state() private rating: number = 0;
 
 	private handleEndConversation() {
-		this.showChatInput = false;
+		// this.showChatInput = false;
+		this.showFeedbackDrawer = true;
 	}
 
 	// Add this method to handle rating selection
@@ -74,11 +75,6 @@ export class AIChat extends withChatContext(LitElement) {
 				conversationId: this.chatContext.conversationId,
 			});
 			this.showFeedbackDrawer = false;
-			this.chatContext.addMessage({
-				sender: "bot",
-				text: "Thank you for your feedback!",
-				time: this.getCurrentTime(),
-			});
 		} catch (error) {
 			console.error("Error submitting feedback:", error);
 		}
@@ -282,12 +278,12 @@ export class AIChat extends withChatContext(LitElement) {
 			></feedback-bottom-sheet>
 
 			<!-- Add a button to trigger the feedback drawer -->
-			<button
+			<!-- <button
 				class="feedback-button"
 				@click=${() => (this.showFeedbackDrawer = true)}
 			>
 				Rate Your Experience
-			</button>
+			</button> -->
 		`;
 	}
 }
