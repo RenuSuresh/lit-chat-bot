@@ -12,6 +12,8 @@ import { chatBotApi } from "../services/chat.service";
 import "./header/chat-header";
 import "./chat-message-list/chat-message-list";
 import "./chat-input/chat-input";
+import "../drawer/feedback";
+import "../drawer/feedback-bottom-sheet";
 
 @customElement("ai-chat")
 export class AIChat extends withChatContext(LitElement) {
@@ -51,6 +53,37 @@ export class AIChat extends withChatContext(LitElement) {
 	};
 
 	@state() private showChatInput: boolean = true;
+
+	@state() private showFeedbackDrawer = false;
+
+	@state() private rating: number = 0;
+
+	private handleEndConversation() {
+		this.showChatInput = false;
+	}
+
+	// Add this method to handle rating selection
+	private handleRatingSelect(e: CustomEvent) {
+		this.rating = e.detail.rating;
+	}
+
+	// Add this method to submit feedback
+	private async submitFeedback() {
+		try {
+			await chatBotApi.submitFeedback({
+				rating: this.rating,
+				conversationId: this.chatContext.conversationId,
+			});
+			this.showFeedbackDrawer = false;
+			this.chatContext.addMessage({
+				sender: "bot",
+				text: "Thank you for your feedback!",
+				time: this.getCurrentTime(),
+			});
+		} catch (error) {
+			console.error("Error submitting feedback:", error);
+		}
+	}
 
 	// Lifecycle methods
 	connectedCallback() {
@@ -164,6 +197,13 @@ export class AIChat extends withChatContext(LitElement) {
 		} finally {
 			this.chatContext.setLoading(false);
 		}
+		if (
+			userMessage.includes("no, thanks") ||
+			userMessage.includes("no thanks") ||
+			userMessage.includes("that's all")
+		) {
+			this.handleEndConversation();
+		}
 	}
 
 	private async scrollToBottom() {
@@ -232,6 +272,49 @@ export class AIChat extends withChatContext(LitElement) {
 				: html`<talk-to-agent
 						.phoneNumber=${this.chatContext.chatbotData.customerCareNumber}
 				  ></talk-to-agent>`}
+
+			<!-- Add the bottom drawer for feedback -->
+			<!-- <bottom-drawer ?open=${this.showFeedbackDrawer}>
+				<h2>Rate your experience</h2>
+				<div class="rating-container">
+					${[1, 2, 3, 4, 5].map(
+				(star) => html`
+					<button
+						class="rating-star ${this.rating >= star ? "selected" : ""}"
+						@click=${() => (this.rating = star)}
+					>
+						★
+					</button>
+				`
+			)}
+				</div>
+				<textarea
+					placeholder="Additional feedback (optional)"
+					class="feedback-textarea"
+				></textarea>
+				<button
+					class="submit-button"
+					@click=${this.submitFeedback}
+					?disabled=${this.rating === 0}
+				>
+					Submit Feedback
+				</button>
+			</bottom-drawer> -->
+
+			<feedback-bottom-sheet
+				?open=${this.showFeedbackDrawer}
+				@close=${() => (this.showFeedbackDrawer = false)}
+				@rating-select=${this.handleRatingSelect}
+				@submit=${this.submitFeedback}
+			></feedback-bottom-sheet>
+
+			<!-- Add a button to trigger the feedback drawer -->
+			<button
+				class="feedback-button"
+				@click=${() => (this.showFeedbackDrawer = true)}
+			>
+				Rate Your Experience
+			</button>
 		`;
 	}
 }
