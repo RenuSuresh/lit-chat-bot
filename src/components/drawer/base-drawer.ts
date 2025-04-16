@@ -43,28 +43,31 @@ export class BaseDrawer extends LitElement {
 
 	private backdrop: HTMLDivElement | null = null;
 
+	private popStateHandler = () => {
+		if (this.open) {
+			this.handleClose();
+		}
+	};
+
 	connectedCallback() {
 		super.connectedCallback();
-		document.body.style.overflow = "hidden";
-	}
-
-	willUpdate(changedProperties: Map<string, unknown>) {
-		if (changedProperties.has("open")) {
-			this.toggleBodyOverflow(this.open);
-			this.toggleBackdrop(this.open);
-		}
+		window.addEventListener("popstate", this.popStateHandler);
 	}
 
 	disconnectedCallback() {
 		super.disconnectedCallback();
 		this.toggleBodyOverflow(false);
 		this.removeBackdrop();
+		window.removeEventListener("popstate", this.popStateHandler);
 	}
 
 	updated(changedProperties: Map<string, unknown>) {
 		if (changedProperties.has("open")) {
+			this.toggleBodyOverflow(this.open);
+
 			if (this.open) {
 				this.addBackdrop();
+				history.pushState({ drawer: true }, "");
 			} else {
 				this.removeBackdrop();
 			}
@@ -75,12 +78,9 @@ export class BaseDrawer extends LitElement {
 		document.body.style.overflow = open ? "hidden" : "";
 	}
 
-	private toggleBackdrop(show: boolean) {
-		if (show) {
-			this.addBackdrop();
-		} else {
-			this.removeBackdrop();
-		}
+	private handleClose() {
+		this.open = false;
+		this.dispatchEvent(new CustomEvent("close"));
 	}
 
 	private addBackdrop() {
@@ -120,16 +120,13 @@ export class BaseDrawer extends LitElement {
 	}
 
 	private handleBackdropClick() {
-		this.open = false;
-		this.dispatchEvent(new CustomEvent("close"));
+		this.handleClose();
 	}
 
 	render() {
 		return html`
 			<div class="drawer-container">
-				<button class="close-button" @click=${this.handleBackdropClick}>
-					×
-				</button>
+				<button class="close-button" @click=${this.handleClose}>×</button>
 				<slot></slot>
 			</div>
 		`;
