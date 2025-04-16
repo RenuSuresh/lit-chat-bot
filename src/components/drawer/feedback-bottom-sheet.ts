@@ -90,6 +90,8 @@ export class FeedbackBottomSheet extends LitElement {
 	@property({ type: Number })
 	rating = 0;
 
+	private backdrop: HTMLDivElement | null = null;
+
 	connectedCallback() {
 		super.connectedCallback();
 		document.body.style.overflow = "hidden";

@@ -12,7 +12,6 @@ import { chatBotApi } from "../services/chat.service";
 import "./header/chat-header";
 import "./chat-message-list/chat-message-list";
 import "./chat-input/chat-input";
-import "../drawer/feedback";
 import "../drawer/feedback-bottom-sheet";
 
 @customElement("ai-chat")
