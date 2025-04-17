@@ -2,8 +2,8 @@ import { LitElement, html } from "lit";
 import { customElement } from "lit/decorators.js";
 import { styles } from "./chat-loader.css";
 
-@customElement("loading-dots")
-export class LoadingDots extends LitElement {
+@customElement("chat-loader")
+export class ChatLoader extends LitElement {
 	static styles = styles;
 
 	render() {

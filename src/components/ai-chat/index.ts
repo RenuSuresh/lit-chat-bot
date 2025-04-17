@@ -12,6 +12,7 @@ import { chatBotApi } from "../services/chat.service";
 import "./header/chat-header";
 import "./chat-message-list/chat-message-list";
 import "./chat-input/chat-input";
+import "./chat-loader/chat-loader";
 import "../drawer/feedback/feedback-bottom-sheet";
 
 @customElement("ai-chat")
@@ -153,13 +154,18 @@ export class AIChat extends withChatContext(LitElement) {
 		this.chatContext.setLoading(true);
 		const userMessage = e.detail.text;
 
-		// Add user message and scroll
+		// Add user message
 		this.chatContext.addMessage({
 			sender: "user",
 			text: userMessage,
 			time: this.getCurrentTime(),
 		});
-		await this.scrollToBottom();
+
+		// Get the chat message list and force scroll
+		const chatMessageList = this.shadowRoot?.querySelector("chat-message-list");
+		if (chatMessageList) {
+			(chatMessageList as any).forceScrollToBottom();
+		}
 
 		try {
 			const response = await chatBotApi.sendMessage({
@@ -174,24 +180,33 @@ export class AIChat extends withChatContext(LitElement) {
 				JSON.parse(response.answer).assistantLastMessage ||
 				"Sorry, I encountered an error. Please try again.";
 
-			// Add bot message and scroll
+			// Add bot message
 			this.chatContext.addMessage({
 				sender: "bot",
 				text: botMessage,
 				time: this.getCurrentTime(),
 			});
-			await this.scrollToBottom();
+
+			// Force scroll after bot message
+			if (chatMessageList) {
+				(chatMessageList as any).forceScrollToBottom();
+			}
 		} catch (error) {
-			// Add error message and scroll
+			// Add error message
 			this.chatContext.addMessage({
 				sender: "bot",
 				text: "Sorry, I encountered an error. Please try again.",
 				time: this.getCurrentTime(),
 			});
-			await this.scrollToBottom();
+
+			// Force scroll after error message
+			if (chatMessageList) {
+				(chatMessageList as any).forceScrollToBottom();
+			}
 		} finally {
 			this.chatContext.setLoading(false);
 		}
+
 		if (
 			userMessage.includes("no, thanks") ||
 			userMessage.includes("no thanks") ||
