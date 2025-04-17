@@ -6,6 +6,10 @@ declare class ChatBotApi {
         conversationId?: string;
         headers?: Record<string, string>;
     }): Promise<any>;
+    submitFeedback({ rating, conversationId, }: {
+        rating: number;
+        conversationId: string;
+    }): Promise<void>;
 }
 export declare const chatBotApi: ChatBotApi;
 export {};

@@ -1,15 +1,13 @@
 import { LitElement } from "lit";
+import type { ChatApiBody, Theme } from "./theme.interface";
 import "./header/chat-header";
 import "./chat-message-list/chat-message-list";
 import "./chat-input/chat-input";
-import { Theme } from "./theme.interface";
-interface ChatApiBody {
-    chatAPI: {
-        body: Record<string, unknown>;
-    };
-    customerCareNumber: string;
-}
-export declare class AIChat extends LitElement {
+import "../drawer/feedback/feedback-bottom-sheet";
+declare const AIChat_base: (new (...args: any[]) => LitElement & {
+    chatContext: import("./context/chat-context.interface").ChatContext;
+}) & typeof LitElement;
+export declare class AIChat extends AIChat_base {
     static styles: import("lit").CSSResult[];
     apiBody: ChatApiBody;
     botImage: string;
@@ -20,12 +18,12 @@ export declare class AIChat extends LitElement {
     showCloseButton: boolean;
     buttonLabel: string;
     theme: Theme;
-    private isLoading;
-    private chatbotData;
-    private messages;
-    private conversationId;
     private showChatInput;
-    constructor();
+    private showFeedbackDrawer;
+    private rating;
+    private handleEndConversation;
+    private handleRatingSelect;
+    private submitFeedback;
     connectedCallback(): void;
     private initializeSessionStorage;
     private loadComponents;
@@ -34,7 +32,6 @@ export declare class AIChat extends LitElement {
     private loadTalkToAgentComponent;
     private _handlePageClose;
     private handleSendMessage;
-    private addMessage;
     private scrollToBottom;
     private getCurrentTime;
     render(): import("lit-html").TemplateResult<1>;

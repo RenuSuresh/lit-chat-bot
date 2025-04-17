@@ -1,4 +1,4 @@
-import{i as t,s as a,x as e,_ as d,e as i}from"./index-7d0a4296.esm.js";const n=t`
+import{i as t,s as a,x as e,_ as i,e as d}from"./index-477433a9.esm.js";const n=t`
 	:host {
 		display: inline-flex;
 	}
@@ -40,4 +40,4 @@ import{i as t,s as a,x as e,_ as d,e as i}from"./index-7d0a4296.esm.js";const n=
 				<div class="dot"></div>
 				<div class="dot"></div>
 			</div>
-		`}};s.styles=n;s=d([i("loading-dots")],s);export{s as LoadingDots};
+		`}};s.styles=n;s=i([d("loading-dots")],s);export{s as LoadingDots};

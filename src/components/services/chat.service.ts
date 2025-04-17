@@ -88,6 +88,19 @@ class ChatBotApi {
 	// 		true // Custom flag to skip JSON headers
 	// 	);
 	// }
+
+	async submitFeedback({
+		rating,
+		conversationId,
+	}: {
+		rating: number;
+		conversationId: string;
+	}): Promise<void> {
+		await api.post(`${this.basePath}/feedback`, {
+			rating,
+			conversation_id: conversationId,
+		});
+	}
 }
 
 export const chatBotApi = new ChatBotApi();
