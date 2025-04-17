@@ -1,4 +1,4 @@
-import { LitElement, html } from "lit";
+import { LitElement, html, css } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { when } from "lit/directives/when.js";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
@@ -9,13 +9,24 @@ import { commonStyles } from "../styles.css";
 import { styles } from "./chat-message-list.css";
 import { DEFAULT_IMAGES } from "../constants";
 import type { ChatMessage } from "../theme.interface";
+import "../chat-info-strip/chat-info-strip";
 
 @customElement("chat-message-list")
 export class ChatMessageList extends withChatContext(LitElement) {
 	static styles = [commonStyles, styles];
 
 	@state() isNewConversation = true;
+	@property({ type: String }) startChatMessage: string =
+		"You’ve reached the start of the conversation.";
+	@property({ type: String }) conversationCloseMessage: string =
+		"✅ This conversation has been closed";
+	@property({ type: String })
+	transferCallMessage: string =
+		"Transferring your call to one of our support executive";
 	@property({ type: String }) botImage: string = DEFAULT_IMAGES.BOT;
+	@property({ type: Boolean }) isConversationClosed = true;
+	@property({ type: Boolean }) isStartChatReached = true;
+	@property({ type: Boolean }) isTransferCallReached = true;
 
 	private chatContainer: HTMLElement | null = null;
 
@@ -49,16 +60,6 @@ export class ChatMessageList extends withChatContext(LitElement) {
 				});
 			}
 		});
-	}
-
-	render() {
-		return html`
-			<div class="chat-container">
-				${this.renderTimestampDivider()}
-				${this.chatContext.messages.map((msg) => this.renderMessage(msg))}
-				${this.renderLoadingIndicator()}
-			</div>
-		`;
 	}
 
 	private renderTimestampDivider() {
@@ -107,5 +108,27 @@ export class ChatMessageList extends withChatContext(LitElement) {
 					</div>
 			  </div>`
 			: null;
+	}
+
+	render() {
+		return html`
+			${this.renderTimestampDivider()}
+			<div class="chat-container">
+				${this.isStartChatReached
+					? html`<chat-info-strip
+							.message=${this.startChatMessage}
+					  ></chat-info-strip>`
+					: null}
+				${this.chatContext.messages.map((msg) => this.renderMessage(msg))}
+				${this.renderLoadingIndicator()}
+				${this.isConversationClosed
+					? html`<chat-info-strip
+							.message=${this.isTransferCallReached
+								? this.transferCallMessage
+								: this.conversationCloseMessage}
+					  ></chat-info-strip>`
+					: null}
+			</div>
+		`;
 	}
 }
