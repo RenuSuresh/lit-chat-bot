@@ -3,7 +3,7 @@ import type { ChatApiBody, Theme } from "./theme.interface";
 import "./header/chat-header";
 import "./chat-message-list/chat-message-list";
 import "./chat-input/chat-input";
-import "../drawer/feedback-bottom-sheet";
+import "../drawer/feedback/feedback-bottom-sheet";
 declare const AIChat_base: (new (...args: any[]) => LitElement & {
     chatContext: import("./context/chat-context.interface").ChatContext;
 }) & typeof LitElement;

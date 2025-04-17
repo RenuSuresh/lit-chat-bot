@@ -1,5 +1,5 @@
 import { LitElement } from "lit";
-import "./base-drawer";
+import "../base-drawer";
 import "./feedback-content";
 export declare class FeedbackBottomSheet extends LitElement {
     open: boolean;

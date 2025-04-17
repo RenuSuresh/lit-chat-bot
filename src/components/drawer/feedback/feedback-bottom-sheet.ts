@@ -1,6 +1,6 @@
 import { LitElement, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import "./base-drawer";
+import "../base-drawer";
 import "./feedback-content";
 
 @customElement("feedback-bottom-sheet")
