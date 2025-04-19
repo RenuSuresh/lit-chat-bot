@@ -22,10 +22,13 @@ export declare class AIChat extends AIChat_base {
     private showChatInput;
     private showFeedbackDrawer;
     private rating;
+    private chatInputObserver;
     private handleEndConversation;
     private handleRatingSelect;
     private submitFeedback;
     connectedCallback(): void;
+    firstUpdated(): void;
+    disconnectedCallback(): void;
     private initializeSessionStorage;
     private loadComponents;
     private loadHeaderComponent;

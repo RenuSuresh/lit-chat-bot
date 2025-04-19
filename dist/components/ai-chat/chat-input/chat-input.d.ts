@@ -5,8 +5,11 @@ export declare class ChatInput extends LitElement {
     sendMsgEnableImage: string;
     sendMsgDisableImage: string;
     render(): import("lit-html").TemplateResult<1>;
-    private handleInput;
-    private handleKeyPress;
+    private _focusInput;
+    private _handleFocus;
+    private _adjustHeight;
+    private _handleInput;
+    private _handleKeyPress;
     private handleSendClick;
     private emitSendMessage;
 }
