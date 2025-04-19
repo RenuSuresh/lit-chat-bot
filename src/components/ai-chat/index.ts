@@ -3,7 +3,7 @@ import { customElement, property, state } from "lit/decorators.js";
 import { commonStyles } from "./styles.css";
 import { DEFAULT_IMAGES } from "./constants";
 import { withChatContext } from "./context/with-chat-context";
-import type { ChatApiBody, ChatMessage, Theme } from "./theme.interface";
+import type { ChatApiBody, Theme } from "./theme.interface";
 
 // Services
 import { chatBotApi } from "../services/chat.service";
@@ -58,6 +58,8 @@ export class AIChat extends withChatContext(LitElement) {
 
 	@state() private rating: number = 0;
 
+	private chatInputObserver: ResizeObserver | null = null;
+
 	private handleEndConversation() {
 		// this.showChatInput = false;
 		this.showFeedbackDrawer = true;
@@ -88,6 +90,27 @@ export class AIChat extends withChatContext(LitElement) {
 		this.loadComponents();
 		// Initialize context with theme
 		this.chatContext.updateTheme(this.theme);
+	}
+
+	firstUpdated() {
+		// Add observer for chat input height changes
+		const chatInput = this.shadowRoot?.querySelector("chat-input");
+		if (chatInput) {
+			this.chatInputObserver = new ResizeObserver((entries) => {
+				for (const entry of entries) {
+					const height = entry.contentRect.height + 58;
+					this.style.setProperty("--chat-input-height", `${height}px`);
+				}
+			});
+			this.chatInputObserver.observe(chatInput);
+		}
+	}
+
+	disconnectedCallback() {
+		if (this.chatInputObserver) {
+			this.chatInputObserver.disconnect();
+		}
+		super.disconnectedCallback();
 	}
 
 	// Private methods
@@ -165,6 +188,16 @@ export class AIChat extends withChatContext(LitElement) {
 		const chatMessageList = this.shadowRoot?.querySelector("chat-message-list");
 		if (chatMessageList) {
 			(chatMessageList as any).forceScrollToBottom();
+		}
+
+		// Reset chat input height
+		const chatInput = this.shadowRoot?.querySelector("chat-input");
+		if (chatInput) {
+			const textarea = chatInput.shadowRoot?.querySelector("textarea");
+			if (textarea) {
+				textarea.style.height = "auto";
+				textarea.style.height = "18px"; // Reset to initial height
+			}
 		}
 
 		try {

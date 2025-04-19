@@ -14,18 +14,49 @@ export const styles = css`
 		align-items: center;
 	}
 
+	.container {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		flex-direction: column;
+		width: 100%;
+	}
+
+	.input-container {
+		box-sizing: border-box;
+		padding: 12px;
+		background-color: #ffffff;
+		position: relative;
+		border: 1px solid #e6ebf4;
+		border-radius: 16px;
+		width: 100%;
+	}
+
+	.input-group {
+		position: relative;
+	}
+
 	.chat-input {
 		flex-grow: 1;
 		padding: 16px;
-		border: 1px solid var(--border-color);
-		border-width: 1px;
-		border-radius: 16px;
 
 		outline: none;
 		font-weight: 500;
-		font-size: 14px;
-		line-height: 24px;
+		font-size: 12px;
+		line-height: 18px;
 		color: var(--input-text-color);
+
+		width: 100%;
+		min-height: 18px;
+		max-height: 72px;
+		padding: 0;
+		margin: 0;
+		border: none;
+		outline: none;
+		resize: none;
+		overflow-y: auto;
+		background: transparent;
+		font: inherit;
 	}
 
 	.chat-input::placeholder {
