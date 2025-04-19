@@ -98,7 +98,7 @@ export class AIChat extends withChatContext(LitElement) {
 		if (chatInput) {
 			this.chatInputObserver = new ResizeObserver((entries) => {
 				for (const entry of entries) {
-					const height = entry.contentRect.height + 66;
+					const height = entry.contentRect.height + 58;
 					this.style.setProperty("--chat-input-height", `${height}px`);
 				}
 			});
