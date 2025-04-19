@@ -5,7 +5,9 @@ export const styles = css`
 		background-color: var(--message-container-bg-color);
 		padding: 0 16px;
 		overflow-y: auto;
-		height: calc(100vh - 146px);
+		height: calc(100vh - var(--chat-input-height, 146px));
+		max-height: calc(100vh - var(--chat-input-height, 146px));
+		position: relative;
 	}
 
 	.bot-message-container {
