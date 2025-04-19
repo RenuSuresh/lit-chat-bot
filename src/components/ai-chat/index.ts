@@ -14,6 +14,7 @@ import "./chat-message-list/chat-message-list";
 import "./chat-input/chat-input";
 import "./chat-loader/chat-loader";
 import "../drawer/feedback/feedback-bottom-sheet";
+import "../drawer/popup-drawer/popup-drawer";
 
 @customElement("ai-chat")
 export class AIChat extends withChatContext(LitElement) {
@@ -58,6 +59,11 @@ export class AIChat extends withChatContext(LitElement) {
 
 	@state() private rating: number = 0;
 
+	@state() private showInactivityPopup = false;
+	private inactivityTimer: number | null = null;
+	private readonly INACTIVITY_TIMEOUT = 5000; // 5 seconds
+	private hasUserDismissedPopup = false;
+
 	private chatInputObserver: ResizeObserver | null = null;
 
 	private handleEndConversation() {
@@ -83,18 +89,37 @@ export class AIChat extends withChatContext(LitElement) {
 		}
 	}
 
+	private resetInactivityTimer() {
+		if (this.inactivityTimer) {
+			window.clearTimeout(this.inactivityTimer);
+		}
+		if (!this.hasUserDismissedPopup) {
+			this.inactivityTimer = window.setTimeout(() => {
+				this.showInactivityPopup = true;
+			}, this.INACTIVITY_TIMEOUT);
+		}
+	}
+
+	private handleInputActivity() {
+		if (!this.hasUserDismissedPopup) {
+			this.showInactivityPopup = false;
+			this.resetInactivityTimer();
+		}
+	}
+
 	// Lifecycle methods
 	connectedCallback() {
 		super.connectedCallback();
 		this.initializeSessionStorage();
 		this.loadComponents();
-		// Initialize context with theme
 		this.chatContext.updateTheme(this.theme);
+		this.resetInactivityTimer();
 	}
 
 	firstUpdated() {
 		// Add observer for chat input height changes
 		const chatInput = this.shadowRoot?.querySelector("chat-input");
+
 		if (chatInput) {
 			this.chatInputObserver = new ResizeObserver((entries) => {
 				for (const entry of entries) {
@@ -111,6 +136,9 @@ export class AIChat extends withChatContext(LitElement) {
 			this.chatInputObserver.disconnect();
 		}
 		super.disconnectedCallback();
+		if (this.inactivityTimer) {
+			window.clearTimeout(this.inactivityTimer);
+		}
 	}
 
 	// Private methods
@@ -174,6 +202,7 @@ export class AIChat extends withChatContext(LitElement) {
 	};
 
 	private async handleSendMessage(e: CustomEvent) {
+		this.handleInputActivity(); // Reset timer when message is sent
 		this.chatContext.setLoading(true);
 		const userMessage = e.detail.text;
 
@@ -311,6 +340,7 @@ export class AIChat extends withChatContext(LitElement) {
 			${this.showChatInput
 				? html`<chat-input
 						@send-message=${this.handleSendMessage}
+						@input=${this.handleInputActivity}
 				  ></chat-input>`
 				: html`<talk-to-agent
 						.phoneNumber=${this.chatContext.chatbotData.customerCareNumber}
@@ -325,13 +355,7 @@ export class AIChat extends withChatContext(LitElement) {
 				@submit=${this.submitFeedback}
 			></feedback-bottom-sheet>
 
-			<!-- Add a button to trigger the feedback drawer -->
-			<!-- <button
-				class="feedback-button"
-				@click=${() => (this.showFeedbackDrawer = true)}
-			>
-				Rate Your Experience
-			</button> -->
+			<popup-drawer></popup-drawer>
 		`;
 	}
 }

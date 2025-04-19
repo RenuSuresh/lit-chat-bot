@@ -11,13 +11,23 @@ export class BaseDrawer extends LitElement {
 
 		.drawer-wrapper {
 			position: fixed;
-			bottom: 0;
-			left: 0;
-			right: 0;
 			z-index: 1000;
 			display: flex;
 			flex-direction: column;
 			align-items: center;
+		}
+
+		.drawer-wrapper[position="bottom"] {
+			bottom: 0;
+			left: 0;
+			right: 0;
+		}
+
+		.drawer-wrapper[position="center"] {
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			width: var(--drawer-width, auto);
 		}
 
 		.drawer-content {
@@ -26,14 +36,26 @@ export class BaseDrawer extends LitElement {
 			animation: slideIn 0.3s ease-out;
 		}
 
+		.drawer-content[position="center"] {
+			animation: fadeIn 0.3s ease-out;
+		}
+
 		.close-button-wrapper {
 			position: absolute;
-			top: -50px;
-			left: 50%;
-			transform: translateX(-50%);
 			z-index: 1001;
 			background: transparent;
 			border-radius: 50%;
+		}
+
+		.close-button-wrapper[position="bottom"] {
+			top: -50px;
+			left: 50%;
+			transform: translateX(-50%);
+		}
+
+		.close-button-wrapper[position="center"] {
+			top: 16px;
+			right: 16px;
 		}
 
 		.close-button {
@@ -58,10 +80,21 @@ export class BaseDrawer extends LitElement {
 
 		.drawer-container {
 			background: white;
-			border-radius: 24px 24px 0 0;
-			padding: 24px 16px;
 			box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
 			position: relative;
+		}
+
+		.drawer-container[position="bottom"] {
+			border-radius: 24px 24px 0 0;
+			padding: 24px 16px;
+		}
+
+		.drawer-container[position="center"] {
+			border-radius: 24px;
+			max-width: 90vw;
+			max-height: 90vh;
+			overflow-y: auto;
+			padding: 16px;
 		}
 
 		@keyframes slideIn {
@@ -82,13 +115,42 @@ export class BaseDrawer extends LitElement {
 			}
 		}
 
-		.drawer-content.closing {
+		@keyframes fadeIn {
+			from {
+				opacity: 0;
+				transform: scale(0.95);
+			}
+			to {
+				opacity: 1;
+				transform: scale(1);
+			}
+		}
+
+		@keyframes fadeOut {
+			from {
+				opacity: 1;
+				transform: scale(1);
+			}
+			to {
+				opacity: 0;
+				transform: scale(0.95);
+			}
+		}
+
+		.drawer-content.closing[position="bottom"] {
 			animation: slideOut 0.3s ease-out;
+		}
+
+		.drawer-content.closing[position="center"] {
+			animation: fadeOut 0.3s ease-out;
 		}
 	`;
 
 	@property({ type: Boolean, reflect: true })
 	open = false;
+
+	@property({ type: String })
+	position: "bottom" | "center" = "bottom";
 
 	@property({ type: Boolean })
 	private isClosing = false;
@@ -185,14 +247,34 @@ export class BaseDrawer extends LitElement {
 			${when(
 				this.open || this.isClosing,
 				() => html`
-					<div class="drawer-wrapper">
-						<div class="drawer-content ${this.isClosing ? "closing" : ""}">
-							<div class="close-button-wrapper">
-								<button class="close-button" @click=${this.handleClose}>
+					<div
+						class="drawer-wrapper"
+						position=${this.position}
+						part="drawer-wrapper"
+					>
+						<div
+							class="drawer-content ${this.isClosing ? "closing" : ""}"
+							position=${this.position}
+							part="drawer-content"
+						>
+							<div
+								class="close-button-wrapper"
+								position=${this.position}
+								part="close-wrapper"
+							>
+								<button
+									class="close-button"
+									@click=${this.handleClose}
+									part="close-button"
+								>
 									×
 								</button>
 							</div>
-							<div class="drawer-container">
+							<div
+								class="drawer-container"
+								position=${this.position}
+								part="drawer-container"
+							>
 								<slot></slot>
 							</div>
 						</div>
