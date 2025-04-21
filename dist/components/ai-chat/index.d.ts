@@ -5,6 +5,7 @@ import "./chat-message-list/chat-message-list";
 import "./chat-input/chat-input";
 import "./chat-loader/chat-loader";
 import "../drawer/feedback/feedback-bottom-sheet";
+import "../drawer/popup-drawer/popup-drawer";
 declare const AIChat_base: (new (...args: any[]) => LitElement & {
     chatContext: import("./context/chat-context.interface").ChatContext;
 }) & typeof LitElement;
@@ -22,10 +23,16 @@ export declare class AIChat extends AIChat_base {
     private showChatInput;
     private showFeedbackDrawer;
     private rating;
+    private showInactivityPopup;
+    private inactivityTimer;
+    private readonly INACTIVITY_TIMEOUT;
+    private hasUserDismissedPopup;
     private chatInputObserver;
     private handleEndConversation;
     private handleRatingSelect;
     private submitFeedback;
+    private resetInactivityTimer;
+    private handleInputActivity;
     connectedCallback(): void;
     firstUpdated(): void;
     disconnectedCallback(): void;
