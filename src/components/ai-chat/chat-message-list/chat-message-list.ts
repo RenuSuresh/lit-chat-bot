@@ -1,4 +1,4 @@
-import { LitElement, html } from "lit";
+import { LitElement, html, css } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { when } from "lit/directives/when.js";
 
@@ -16,7 +16,30 @@ import "../chat-loader/chat-loader";
 
 @customElement("chat-message-list")
 export class ChatMessageList extends withChatContext(LitElement) {
-	static styles = [commonStyles, styles];
+	static styles = [
+		commonStyles,
+		css`
+			:host {
+				display: flex;
+				flex-direction: column;
+				height: 100%;
+				overflow: hidden;
+			}
+
+			.chat-container {
+				flex: 1;
+				overflow-y: auto;
+				padding: 16px;
+				scroll-behavior: smooth;
+			}
+
+			/* bot-message,
+			user-message {
+				display: block;
+				margin-bottom: 16px;
+			} */
+		`,
+	];
 
 	@state() isNewConversation = true;
 	@property({ type: String }) botImage: string = DEFAULT_IMAGES.BOT;
@@ -26,71 +49,41 @@ export class ChatMessageList extends withChatContext(LitElement) {
 
 	private chatContainer: HTMLElement | null = null;
 	private observer: MutationObserver | null = null;
+	private scrollTimeoutId: number | null = null;
 
 	connectedCallback() {
 		super.connectedCallback();
+		window.addEventListener("force-chat-scroll", () =>
+			this.forceScrollToBottom()
+		);
 	}
 
 	disconnectedCallback() {
 		super.disconnectedCallback();
-		if (this.observer) {
-			this.observer.disconnect();
+		window.removeEventListener("force-chat-scroll", () =>
+			this.forceScrollToBottom()
+		);
+		if (this.scrollTimeoutId) {
+			clearTimeout(this.scrollTimeoutId);
 		}
 	}
 
 	firstUpdated() {
-		this.chatContainer = this.shadowRoot?.querySelector(
-			".chat-container"
-		) as HTMLElement;
-		if (this.chatContainer && this.observer) {
-			this.observer.observe(this.chatContainer, {
-				childList: true,
-				characterData: true,
-				subtree: true,
-			});
-		}
 		this.scrollToBottom();
 	}
 
 	updated(changedProperties: Map<string, any>) {
 		super.updated(changedProperties);
-
-		// Check if messages were updated
 		if (changedProperties.has("chatContext")) {
-			const oldMessages = changedProperties.get("chatContext")?.messages || [];
-			const newMessages = this.chatContext.messages;
-
-			// Only scroll if there are new messages
-			if (newMessages.length > oldMessages.length) {
-				// Wait for the next frame to ensure DOM updates
-				requestAnimationFrame(() => {
-					// Add a small delay to ensure content is rendered
-					setTimeout(() => {
-						this.scrollToBottom();
-					}, 50);
-				});
-			}
-		}
-
-		// Also scroll for other relevant changes
-		if (
-			changedProperties.has("isConversationClosed") ||
-			changedProperties.has("isStartChatReached") ||
-			changedProperties.has("isTransferCallReached")
-		) {
 			this.scrollToBottom();
 		}
 	}
 
-	private scrollToBottom() {
-		requestAnimationFrame(() => {
-			if (this.chatContainer) {
-				this.chatContainer.scrollTo({
-					top: this.chatContainer.scrollHeight,
-					behavior: "smooth",
-				});
-			}
-		});
+	scrollToBottom() {
+		const chatContainer = this.shadowRoot?.querySelector(".chat-container");
+		if (chatContainer) {
+			chatContainer.scrollTop = chatContainer.scrollHeight;
+		}
 	}
 
 	private renderTimestampDivider() {
@@ -106,13 +99,12 @@ export class ChatMessageList extends withChatContext(LitElement) {
 	}
 
 	private renderMessage(msg: ChatMessage) {
-		return when(
-			msg.sender === "bot",
-			() => html`
-				<bot-message .message=${msg} .botImage=${this.botImage}></bot-message>
-			`,
-			() => html` <user-message .message=${msg}></user-message> `
-		);
+		return msg.sender === "bot"
+			? html`<bot-message
+					.message=${msg}
+					.botImage=${this.botImage}
+			  ></bot-message>`
+			: html`<user-message .message=${msg}></user-message>`;
 	}
 
 	private renderLoadingIndicator() {
@@ -175,12 +167,30 @@ export class ChatMessageList extends withChatContext(LitElement) {
 		`;
 	}
 
-	// Add this method to allow external components to trigger scroll
 	public forceScrollToBottom() {
-		requestAnimationFrame(() => {
-			setTimeout(() => {
-				this.scrollToBottom();
-			}, 50);
-		});
+		if (this.scrollTimeoutId) {
+			clearTimeout(this.scrollTimeoutId);
+		}
+
+		this.scrollTimeoutId = window.setTimeout(() => {
+			const chatContainer = this.shadowRoot?.querySelector(".chat-container");
+			if (chatContainer) {
+				const scrollOptions = {
+					top: chatContainer.scrollHeight,
+					behavior: "smooth" as ScrollBehavior,
+				};
+
+				chatContainer.scrollTo(scrollOptions);
+
+				setTimeout(() => {
+					if (
+						chatContainer.scrollTop + chatContainer.clientHeight <
+						chatContainer.scrollHeight
+					) {
+						chatContainer.scrollTo(scrollOptions);
+					}
+				}, 500);
+			}
+		}, 100);
 	}
 }

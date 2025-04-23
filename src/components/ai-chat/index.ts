@@ -4,6 +4,7 @@ import { commonStyles } from "./styles.css";
 import { DEFAULT_IMAGES } from "./constants";
 import { withChatContext } from "./context/with-chat-context";
 import type { ChatApiBody, Theme } from "./theme.interface";
+import { css } from "lit";
 
 // Services
 import { chatBotApi } from "../services/chat.service";
@@ -18,7 +19,25 @@ import "../drawer/popup-drawer/popup-drawer";
 
 @customElement("ai-chat")
 export class AIChat extends withChatContext(LitElement) {
-	static styles = [commonStyles];
+	static styles = [
+		commonStyles,
+		css`
+			:host {
+				display: flex;
+				flex-direction: column;
+				height: 100vh;
+			}
+
+			chat-message-list {
+				flex: 1;
+				overflow: hidden;
+			}
+
+			/* chat-input {
+				flex-shrink: 0;
+			} */
+		`,
+	];
 
 	// Properties
 	@property({ type: Object }) apiBody!: ChatApiBody;
@@ -278,23 +297,23 @@ export class AIChat extends withChatContext(LitElement) {
 		}
 	}
 
-	private async scrollToBottom() {
-		// Wait for the next frame to ensure DOM is updated
-		await new Promise((resolve) => requestAnimationFrame(resolve));
+	// private async scrollToBottom() {
+	// 	// Wait for the next frame to ensure DOM is updated
+	// 	await new Promise((resolve) => requestAnimationFrame(resolve));
 
-		// Find the chat message list and scroll it
-		const chatMessageList = this.shadowRoot?.querySelector("chat-message-list");
-		if (chatMessageList) {
-			const chatContainer =
-				chatMessageList.shadowRoot?.querySelector(".chat-container");
-			if (chatContainer) {
-				chatContainer.scrollTo({
-					top: chatContainer.scrollHeight,
-					behavior: "smooth",
-				});
-			}
-		}
-	}
+	// 	// Find the chat message list and scroll it
+	// 	const chatMessageList = this.shadowRoot?.querySelector("chat-message-list");
+	// 	if (chatMessageList) {
+	// 		const chatContainer =
+	// 			chatMessageList.shadowRoot?.querySelector(".chat-container");
+	// 		if (chatContainer) {
+	// 			chatContainer.scrollTo({
+	// 				top: chatContainer.scrollHeight,
+	// 				behavior: "smooth",
+	// 			});
+	// 		}
+	// 	}
+	// }
 
 	private getCurrentTime(): string {
 		return new Date().toLocaleTimeString([], {
