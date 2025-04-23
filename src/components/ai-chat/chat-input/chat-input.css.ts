@@ -74,7 +74,6 @@ export const styles = css`
 	}
 
 	.send-btn:disabled {
-		opacity: 0.5;
 		cursor: not-allowed;
 	}
 

@@ -18,46 +18,7 @@ export class ChatInput extends withChatContext(LitElement) {
 	@property({ type: String }) sendMsgEnableImage: string =
 		"https://assets.pharmeasy.in/web-assets/images/icon_sendMessage.svg";
 	@property({ type: String }) sendMsgDisableImage: string =
-		"https://assets.pharmeasy.in/web-assets/images/icon_sendMessage_disable.svg";
-
-	render() {
-		return html`
-			<div class="input-area">
-				<div class="container">
-					<div class="input-container" @click=${this._focusInput}>
-						<textarea
-							rows="1"
-							.value=${this.inputValue}
-							@input=${this._handleInput}
-							@keydown=${this._handleKeyPress}
-							@focus=${this._handleFocus}
-							placeholder="Type your query here"
-							class="chat-input"
-							maxlength=${MAX_CHARS}
-						></textarea>
-						${this.charCount > 0
-							? html`
-									<div
-										class="char-count ${this.charCount === MAX_CHARS
-											? "limit-reached"
-											: ""}"
-									>
-										${this.charCount}/${MAX_CHARS}
-									</div>
-							  `
-							: ""}
-					</div>
-				</div>
-				<button
-					@click=${this.handleSendClick}
-					?disabled=${!this.inputValue.trim()}
-					class="send-btn"
-				>
-					<img src=${this.sendMsgEnableImage} width="40" height="40" />
-				</button>
-			</div>
-		`;
-	}
+		"https://assets.pharmeasy.in/web-assets/images/icon_sendMessage_disabled.svg";
 
 	private _focusInput() {
 		const textarea = this.shadowRoot?.querySelector("textarea");
@@ -112,14 +73,11 @@ export class ChatInput extends withChatContext(LitElement) {
 	}
 
 	private emitSendMessage() {
-		if (this.inputValue.trim() && this.inputValue.length <= MAX_CHARS) {
-			// this.dispatchEvent(
-			// 	new CustomEvent("send-message", {
-			// 		detail: { text: this.inputValue },
-			// 		bubbles: true,
-			// 		composed: true,
-			// 	})
-			// );
+		if (
+			this.inputValue.trim() &&
+			this.inputValue.length <= MAX_CHARS &&
+			!this.chatContext.isLoading
+		) {
 			this.handleSendMessage({
 				detail: { text: this.inputValue },
 				bubbles: true,
@@ -215,5 +173,50 @@ export class ChatInput extends withChatContext(LitElement) {
 			hour: "2-digit",
 			minute: "2-digit",
 		});
+	}
+
+	render() {
+		return html`
+			<div class="input-area">
+				<div class="container">
+					<div class="input-container" @click=${this._focusInput}>
+						<textarea
+							rows="1"
+							.value=${this.inputValue}
+							@input=${this._handleInput}
+							@keydown=${this._handleKeyPress}
+							@focus=${this._handleFocus}
+							placeholder="Type your query here"
+							class="chat-input"
+							maxlength=${MAX_CHARS}
+						></textarea>
+						${this.charCount > 0
+							? html`
+									<div
+										class="char-count ${this.charCount === MAX_CHARS
+											? "limit-reached"
+											: ""}"
+									>
+										${this.charCount}/${MAX_CHARS}
+									</div>
+							  `
+							: ""}
+					</div>
+				</div>
+				<button
+					@click=${this.handleSendClick}
+					?disabled=${!this.inputValue.trim() || this.chatContext.isLoading}
+					class="send-btn"
+				>
+					<img
+						src=${!this.inputValue.trim() || this.chatContext.isLoading
+							? this.sendMsgDisableImage
+							: this.sendMsgEnableImage}
+						width="40"
+						height="40"
+					/>
+				</button>
+			</div>
+		`;
 	}
 }
