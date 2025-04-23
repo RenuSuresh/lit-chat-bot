@@ -3,11 +3,13 @@ import { customElement, property, state } from "lit/decorators.js";
 
 import { commonStyles } from "../styles.css";
 import { styles } from "./chat-input.css";
+import { withChatContext } from "../context/with-chat-context";
+import { chatBotApi } from "../../../services/chat.service";
 const maxHeight = 72;
 const MAX_CHARS = 200;
 
 @customElement("chat-input")
-export class ChatInput extends LitElement {
+export class ChatInput extends withChatContext(LitElement) {
 	static styles = [commonStyles, styles];
 
 	@state() private inputValue = "";
@@ -111,15 +113,105 @@ export class ChatInput extends LitElement {
 
 	private emitSendMessage() {
 		if (this.inputValue.trim() && this.inputValue.length <= MAX_CHARS) {
-			this.dispatchEvent(
-				new CustomEvent("send-message", {
-					detail: { text: this.inputValue },
-					bubbles: true,
-					composed: true,
-				})
-			);
+			// this.dispatchEvent(
+			// 	new CustomEvent("send-message", {
+			// 		detail: { text: this.inputValue },
+			// 		bubbles: true,
+			// 		composed: true,
+			// 	})
+			// );
+			this.handleSendMessage({
+				detail: { text: this.inputValue },
+				bubbles: true,
+				composed: true,
+			});
 			this.inputValue = "";
 			this.charCount = 0;
 		}
+	}
+
+	private async handleSendMessage(e: any) {
+		// this.handleInputActivity(); // Reset timer when message is sent
+		this.chatContext.setLoading(true);
+		const userMessage = e.detail.text;
+
+		// Add user message
+		this.chatContext.addMessage({
+			sender: "user",
+			text: userMessage,
+			time: this.getCurrentTime(),
+		});
+
+		// Get the chat message list and force scroll
+		const chatMessageList = this.shadowRoot?.querySelector("chat-message-list");
+		if (chatMessageList) {
+			(chatMessageList as any).forceScrollToBottom();
+		}
+
+		// Reset chat input height
+		const chatInput = this.shadowRoot?.querySelector("chat-input");
+		if (chatInput) {
+			const textarea = chatInput.shadowRoot?.querySelector("textarea");
+			if (textarea) {
+				textarea.style.height = "auto";
+				textarea.style.height = "18px"; // Reset to initial height
+			}
+		}
+
+		try {
+			const response = await chatBotApi.sendMessage({
+				body: this.chatContext.chatbotData.chatAPI.body,
+				message: userMessage,
+				conversationId: this.chatContext.conversationId,
+			});
+
+			this.chatContext.setConversationId(response.conversation_id);
+
+			const botMessage =
+				JSON.parse(response.answer).assistantLastMessage ||
+				"Sorry, I encountered an error. Please try again.";
+
+			// Add bot message
+			this.chatContext.addMessage({
+				sender: "bot",
+				text: botMessage,
+				time: this.getCurrentTime(),
+			});
+
+			// Force scroll after bot message
+			if (chatMessageList) {
+				(chatMessageList as any).forceScrollToBottom();
+			}
+		} catch (error) {
+			// Add error message
+			this.chatContext.addMessage({
+				sender: "bot",
+				text: "Sorry, I encountered an error. Please try again.",
+				time: this.getCurrentTime(),
+			});
+
+			// Force scroll after error message
+			if (chatMessageList) {
+				(chatMessageList as any).forceScrollToBottom();
+			}
+		} finally {
+			this.chatContext.setLoading(false);
+		}
+
+		if (
+			userMessage.includes("no, thanks") ||
+			userMessage.includes("no thanks") ||
+			userMessage.includes("that's all")
+		) {
+			// this.handleEndConversation();
+			console.log("handle end conversation>>>>");
+		}
+	}
+
+	private getCurrentTime(): string {
+		return new Date().toLocaleTimeString([], {
+			hour: "2-digit",
+			minute: "2-digit",
+		});
 	}
 }

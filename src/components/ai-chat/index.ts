@@ -6,7 +6,7 @@ import { withChatContext } from "./context/with-chat-context";
 import type { ChatApiBody, Theme } from "./theme.interface";
 
 // Services
-import { chatBotApi } from "../services/chat.service";
+import { chatBotApi } from "../../services/chat.service";
 
 // Components
 import "./header/chat-header";
@@ -201,100 +201,100 @@ export class AIChat extends withChatContext(LitElement) {
 		this.onCloseChat?.();
 	};
 
-	private async handleSendMessage(e: CustomEvent) {
-		this.handleInputActivity(); // Reset timer when message is sent
-		this.chatContext.setLoading(true);
-		const userMessage = e.detail.text;
+	// private async handleSendMessage(e: CustomEvent) {
+	// 	this.handleInputActivity(); // Reset timer when message is sent
+	// 	this.chatContext.setLoading(true);
+	// 	const userMessage = e.detail.text;
 
-		// Add user message
-		this.chatContext.addMessage({
-			sender: "user",
-			text: userMessage,
-			time: this.getCurrentTime(),
-		});
+	// 	// Add user message
+	// 	this.chatContext.addMessage({
+	// 		sender: "user",
+	// 		text: userMessage,
+	// 		time: this.getCurrentTime(),
+	// 	});
 
-		// Get the chat message list and force scroll
-		const chatMessageList = this.shadowRoot?.querySelector("chat-message-list");
-		if (chatMessageList) {
-			(chatMessageList as any).forceScrollToBottom();
-		}
+	// 	// Get the chat message list and force scroll
+	// 	const chatMessageList = this.shadowRoot?.querySelector("chat-message-list");
+	// 	if (chatMessageList) {
+	// 		(chatMessageList as any).forceScrollToBottom();
+	// 	}
 
-		// Reset chat input height
-		const chatInput = this.shadowRoot?.querySelector("chat-input");
-		if (chatInput) {
-			const textarea = chatInput.shadowRoot?.querySelector("textarea");
-			if (textarea) {
-				textarea.style.height = "auto";
-				textarea.style.height = "18px"; // Reset to initial height
-			}
-		}
+	// 	// Reset chat input height
+	// 	const chatInput = this.shadowRoot?.querySelector("chat-input");
+	// 	if (chatInput) {
+	// 		const textarea = chatInput.shadowRoot?.querySelector("textarea");
+	// 		if (textarea) {
+	// 			textarea.style.height = "auto";
+	// 			textarea.style.height = "18px"; // Reset to initial height
+	// 		}
+	// 	}
 
-		try {
-			const response = await chatBotApi.sendMessage({
-				body: this.chatContext.chatbotData.chatAPI.body,
-				message: userMessage,
-				conversationId: this.chatContext.conversationId,
-			});
+	// 	try {
+	// 		const response = await chatBotApi.sendMessage({
+	// 			body: this.chatContext.chatbotData.chatAPI.body,
+	// 			message: userMessage,
+	// 			conversationId: this.chatContext.conversationId,
+	// 		});
 
-			this.chatContext.setConversationId(response.conversation_id);
+	// 		this.chatContext.setConversationId(response.conversation_id);
 
-			const botMessage =
-				JSON.parse(response.answer).assistantLastMessage ||
-				"Sorry, I encountered an error. Please try again.";
+	// 		const botMessage =
+	// 			JSON.parse(response.answer).assistantLastMessage ||
+	// 			"Sorry, I encountered an error. Please try again.";
 
-			// Add bot message
-			this.chatContext.addMessage({
-				sender: "bot",
-				text: botMessage,
-				time: this.getCurrentTime(),
-			});
+	// 		// Add bot message
+	// 		this.chatContext.addMessage({
+	// 			sender: "bot",
+	// 			text: botMessage,
+	// 			time: this.getCurrentTime(),
+	// 		});
 
-			// Force scroll after bot message
-			if (chatMessageList) {
-				(chatMessageList as any).forceScrollToBottom();
-			}
-		} catch (error) {
-			// Add error message
-			this.chatContext.addMessage({
-				sender: "bot",
-				text: "Sorry, I encountered an error. Please try again.",
-				time: this.getCurrentTime(),
-			});
+	// 		// Force scroll after bot message
+	// 		if (chatMessageList) {
+	// 			(chatMessageList as any).forceScrollToBottom();
+	// 		}
+	// 	} catch (error) {
+	// 		// Add error message
+	// 		this.chatContext.addMessage({
+	// 			sender: "bot",
+	// 			text: "Sorry, I encountered an error. Please try again.",
+	// 			time: this.getCurrentTime(),
+	// 		});
 
-			// Force scroll after error message
-			if (chatMessageList) {
-				(chatMessageList as any).forceScrollToBottom();
-			}
-		} finally {
-			this.chatContext.setLoading(false);
-		}
+	// 		// Force scroll after error message
+	// 		if (chatMessageList) {
+	// 			(chatMessageList as any).forceScrollToBottom();
+	// 		}
+	// 	} finally {
+	// 		this.chatContext.setLoading(false);
+	// 	}
 
-		if (
-			userMessage.includes("no, thanks") ||
-			userMessage.includes("no thanks") ||
-			userMessage.includes("that's all")
-		) {
-			this.handleEndConversation();
-		}
-	}
+	// 	if (
+	// 		userMessage.includes("no, thanks") ||
+	// 		userMessage.includes("no thanks") ||
+	// 		userMessage.includes("that's all")
+	// 	) {
+	// 		this.handleEndConversation();
+	// 	}
+	// }
 
-	private async scrollToBottom() {
-		// Wait for the next frame to ensure DOM is updated
-		await new Promise((resolve) => requestAnimationFrame(resolve));
+	// private async scrollToBottom() {
+	// 	// Wait for the next frame to ensure DOM is updated
+	// 	await new Promise((resolve) => requestAnimationFrame(resolve));
 
-		// Find the chat message list and scroll it
-		const chatMessageList = this.shadowRoot?.querySelector("chat-message-list");
-		if (chatMessageList) {
-			const chatContainer =
-				chatMessageList.shadowRoot?.querySelector(".chat-container");
-			if (chatContainer) {
-				chatContainer.scrollTo({
-					top: chatContainer.scrollHeight,
-					behavior: "smooth",
-				});
-			}
-		}
-	}
+	// 	// Find the chat message list and scroll it
+	// 	const chatMessageList = this.shadowRoot?.querySelector("chat-message-list");
+	// 	if (chatMessageList) {
+	// 		const chatContainer =
+	// 			chatMessageList.shadowRoot?.querySelector(".chat-container");
+	// 		if (chatContainer) {
+	// 			chatContainer.scrollTo({
+	// 				top: chatContainer.scrollHeight,
+	// 				behavior: "smooth",
+	// 			});
+	// 		}
+	// 	}
+	// }
 
 	private getCurrentTime(): string {
 		return new Date().toLocaleTimeString([], {
@@ -338,10 +338,7 @@ export class AIChat extends withChatContext(LitElement) {
 			<chat-message-list .botImage=${this.botImage}></chat-message-list>
 
 			${this.showChatInput
-				? html`<chat-input
-						@send-message=${this.handleSendMessage}
-						@input=${this.handleInputActivity}
-				  ></chat-input>`
+				? html`<chat-input @input=${this.handleInputActivity}></chat-input>`
 				: html`<talk-to-agent
 						.phoneNumber=${this.chatContext.chatbotData.customerCareNumber}
 				  ></talk-to-agent>`}
