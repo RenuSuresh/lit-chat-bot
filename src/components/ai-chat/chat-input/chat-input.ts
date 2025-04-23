@@ -4,12 +4,14 @@ import { customElement, property, state } from "lit/decorators.js";
 import { commonStyles } from "../styles.css";
 import { styles } from "./chat-input.css";
 const maxHeight = 72;
+const MAX_CHARS = 200;
 
 @customElement("chat-input")
 export class ChatInput extends LitElement {
 	static styles = [commonStyles, styles];
 
 	@state() private inputValue = "";
+	@state() private charCount = 0;
 
 	@property({ type: String }) sendMsgEnableImage: string =
 		"https://assets.pharmeasy.in/web-assets/images/icon_sendMessage.svg";
@@ -29,7 +31,19 @@ export class ChatInput extends LitElement {
 							@focus=${this._handleFocus}
 							placeholder="Type your query here"
 							class="chat-input"
+							maxlength=${MAX_CHARS}
 						></textarea>
+						${this.charCount > 0
+							? html`
+									<div
+										class="char-count ${this.charCount === MAX_CHARS
+											? "limit-reached"
+											: ""}"
+									>
+										${this.charCount}/${MAX_CHARS}
+									</div>
+							  `
+							: ""}
 					</div>
 				</div>
 				<button
@@ -74,7 +88,13 @@ export class ChatInput extends LitElement {
 	}
 
 	private _handleInput(e: Event) {
-		this.inputValue = (e.target as HTMLInputElement).value;
+		const input = e.target as HTMLInputElement;
+		// Ensure we don't exceed max characters
+		if (input.value.length > MAX_CHARS) {
+			input.value = input.value.slice(0, MAX_CHARS);
+		}
+		this.inputValue = input.value;
+		this.charCount = input.value.length;
 		this._adjustHeight();
 	}
 
@@ -90,13 +110,16 @@ export class ChatInput extends LitElement {
 	}
 
 	private emitSendMessage() {
-		this.dispatchEvent(
-			new CustomEvent("send-message", {
-				detail: { text: this.inputValue },
-				bubbles: true,
-				composed: true,
-			})
-		);
-		this.inputValue = "";
+		if (this.inputValue.trim() && this.inputValue.length <= MAX_CHARS) {
+			this.dispatchEvent(
+				new CustomEvent("send-message", {
+					detail: { text: this.inputValue },
+					bubbles: true,
+					composed: true,
+				})
+			);
+			this.inputValue = "";
+			this.charCount = 0;
+		}
 	}
 }

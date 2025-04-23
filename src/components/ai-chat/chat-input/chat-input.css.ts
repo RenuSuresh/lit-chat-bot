@@ -57,6 +57,7 @@ export const styles = css`
 		overflow-y: auto;
 		background: transparent;
 		font: inherit;
+		padding-right: 40px; /* Make space for character counter */
 	}
 
 	.chat-input::placeholder {
@@ -74,5 +75,18 @@ export const styles = css`
 	.send-btn:disabled {
 		opacity: 0.5;
 		cursor: not-allowed;
+	}
+
+	.char-count {
+		position: absolute;
+		right: 12px;
+		bottom: 8px;
+		font-size: 10px;
+		color: #8897a2;
+		pointer-events: none;
+	}
+
+	.char-count.limit-reached {
+		color: #ff6b6b;
 	}
 `;
