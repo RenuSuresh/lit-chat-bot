@@ -27,7 +27,7 @@ export declare class ChatMessageList extends ChatMessageList_base {
     private getStartChatInfo;
     private getConversationCloseInfo;
     private getTransferCallInfo;
-    render(): import("lit-html").TemplateResult<1>;
     forceScrollToBottom(): void;
+    render(): import("lit-html").TemplateResult<1>;
 }
 export {};

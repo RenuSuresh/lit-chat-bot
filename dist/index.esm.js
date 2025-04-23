@@ -1,1 +1,1 @@
-export{A as AIChat}from"./index-6e120d15.esm.js";
+export{A as AIChat}from"./index-570f9d20.esm.js";

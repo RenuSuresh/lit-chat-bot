@@ -28,23 +28,20 @@ export declare class AIChat extends AIChat_base {
     private readonly INACTIVITY_TIMEOUT;
     private hasUserDismissedPopup;
     private chatInputObserver;
+    connectedCallback(): void;
+    firstUpdated(): void;
+    disconnectedCallback(): void;
     private handleEndConversation;
     private handleRatingSelect;
     private submitFeedback;
     private resetInactivityTimer;
     private handleInputActivity;
-    connectedCallback(): void;
-    firstUpdated(): void;
-    disconnectedCallback(): void;
     private initializeSessionStorage;
     private loadComponents;
     private loadHeaderComponent;
     private loadChatLoaderComponent;
     private loadTalkToAgentComponent;
     private _handlePageClose;
-    private handleSendMessage;
-    private scrollToBottom;
-    private getCurrentTime;
     render(): import("lit-html").TemplateResult<1>;
 }
 export {};
