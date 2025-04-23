@@ -2,6 +2,7 @@ import { LitElement } from "lit";
 export declare class BaseDrawer extends LitElement {
     static styles: import("lit").CSSResult;
     open: boolean;
+    position: "bottom" | "center";
     private isClosing;
     private backdrop;
     private popStateHandler;

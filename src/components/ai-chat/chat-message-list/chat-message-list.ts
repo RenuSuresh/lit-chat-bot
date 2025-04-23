@@ -39,8 +39,8 @@ export class ChatMessageList extends withChatContext(LitElement) {
 	}
 
 	firstUpdated() {
-		this.chatContainer = this.shadowRoot?.querySelector(
-			".chat-container"
+		this.chatContainer = this.shadowRoot?.getElementById(
+			"chat-container"
 		) as HTMLElement;
 		if (this.chatContainer && this.observer) {
 			this.observer.observe(this.chatContainer, {
@@ -149,9 +149,18 @@ export class ChatMessageList extends withChatContext(LitElement) {
 		};
 	}
 
+	// Add this method to allow external components to trigger scroll
+	public forceScrollToBottom() {
+		requestAnimationFrame(() => {
+			setTimeout(() => {
+				this.scrollToBottom();
+			}, 50);
+		});
+	}
+
 	render() {
 		return html`
-			<div class="chat-container">
+			<div class="chat-container" id="chat-container">
 				${this.renderTimestampDivider()}
 				${when(
 					this.isStartChatReached,
@@ -173,14 +182,5 @@ export class ChatMessageList extends withChatContext(LitElement) {
 				)}
 			</div>
 		`;
-	}
-
-	// Add this method to allow external components to trigger scroll
-	public forceScrollToBottom() {
-		requestAnimationFrame(() => {
-			setTimeout(() => {
-				this.scrollToBottom();
-			}, 50);
-		});
 	}
 }
