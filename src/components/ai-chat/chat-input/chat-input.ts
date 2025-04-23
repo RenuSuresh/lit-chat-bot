@@ -141,9 +141,11 @@ export class ChatInput extends withChatContext(LitElement) {
 			text: userMessage,
 			time: this.getCurrentTime(),
 		});
+		const root = document.querySelector("ai-chat");
 
 		// Get the chat message list and force scroll
-		const chatMessageList = this.shadowRoot?.querySelector("chat-message-list");
+		const chatMessageList =
+			root?.shadowRoot?.querySelector("chat-message-list");
 		if (chatMessageList) {
 			(chatMessageList as any).forceScrollToBottom();
 		}

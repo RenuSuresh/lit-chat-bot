@@ -66,6 +66,40 @@ export class AIChat extends withChatContext(LitElement) {
 
 	private chatInputObserver: ResizeObserver | null = null;
 
+	// Lifecycle methods
+	connectedCallback() {
+		super.connectedCallback();
+		this.initializeSessionStorage();
+		this.loadComponents();
+		this.chatContext.updateTheme(this.theme);
+		this.resetInactivityTimer();
+	}
+
+	firstUpdated() {
+		// Add observer for chat input height changes
+		const chatInput = this.shadowRoot?.querySelector("chat-input");
+
+		if (chatInput) {
+			this.chatInputObserver = new ResizeObserver((entries) => {
+				for (const entry of entries) {
+					const height = entry.contentRect.height + 58;
+					this.style.setProperty("--chat-input-height", `${height}px`);
+				}
+			});
+			this.chatInputObserver.observe(chatInput);
+		}
+	}
+
+	disconnectedCallback() {
+		if (this.chatInputObserver) {
+			this.chatInputObserver.disconnect();
+		}
+		super.disconnectedCallback();
+		if (this.inactivityTimer) {
+			window.clearTimeout(this.inactivityTimer);
+		}
+	}
+
 	private handleEndConversation() {
 		// this.showChatInput = false;
 		this.showFeedbackDrawer = true;
@@ -104,40 +138,6 @@ export class AIChat extends withChatContext(LitElement) {
 		if (!this.hasUserDismissedPopup) {
 			this.showInactivityPopup = false;
 			this.resetInactivityTimer();
-		}
-	}
-
-	// Lifecycle methods
-	connectedCallback() {
-		super.connectedCallback();
-		this.initializeSessionStorage();
-		this.loadComponents();
-		this.chatContext.updateTheme(this.theme);
-		this.resetInactivityTimer();
-	}
-
-	firstUpdated() {
-		// Add observer for chat input height changes
-		const chatInput = this.shadowRoot?.querySelector("chat-input");
-
-		if (chatInput) {
-			this.chatInputObserver = new ResizeObserver((entries) => {
-				for (const entry of entries) {
-					const height = entry.contentRect.height + 58;
-					this.style.setProperty("--chat-input-height", `${height}px`);
-				}
-			});
-			this.chatInputObserver.observe(chatInput);
-		}
-	}
-
-	disconnectedCallback() {
-		if (this.chatInputObserver) {
-			this.chatInputObserver.disconnect();
-		}
-		super.disconnectedCallback();
-		if (this.inactivityTimer) {
-			window.clearTimeout(this.inactivityTimer);
 		}
 	}
 
@@ -200,108 +200,6 @@ export class AIChat extends withChatContext(LitElement) {
 	private _handlePageClose = () => {
 		this.onCloseChat?.();
 	};
-
-	// private async handleSendMessage(e: CustomEvent) {
-	// 	this.handleInputActivity(); // Reset timer when message is sent
-	// 	this.chatContext.setLoading(true);
-	// 	const userMessage = e.detail.text;
-
-	// 	// Add user message
-	// 	this.chatContext.addMessage({
-	// 		sender: "user",
-	// 		text: userMessage,
-	// 		time: this.getCurrentTime(),
-	// 	});
-
-	// 	// Get the chat message list and force scroll
-	// 	const chatMessageList = this.shadowRoot?.querySelector("chat-message-list");
-	// 	if (chatMessageList) {
-	// 		(chatMessageList as any).forceScrollToBottom();
-	// 	}
-
-	// 	// Reset chat input height
-	// 	const chatInput = this.shadowRoot?.querySelector("chat-input");
-	// 	if (chatInput) {
-	// 		const textarea = chatInput.shadowRoot?.querySelector("textarea");
-	// 		if (textarea) {
-	// 			textarea.style.height = "auto";
-	// 			textarea.style.height = "18px"; // Reset to initial height
-	// 		}
-	// 	}
-
-	// 	try {
-	// 		const response = await chatBotApi.sendMessage({
-	// 			body: this.chatContext.chatbotData.chatAPI.body,
-	// 			message: userMessage,
-	// 			conversationId: this.chatContext.conversationId,
-	// 		});
-
-	// 		this.chatContext.setConversationId(response.conversation_id);
-
-	// 		const botMessage =
-	// 			JSON.parse(response.answer).assistantLastMessage ||
-	// 			"Sorry, I encountered an error. Please try again.";
-
-	// 		// Add bot message
-	// 		this.chatContext.addMessage({
-	// 			sender: "bot",
-	// 			text: botMessage,
-	// 			time: this.getCurrentTime(),
-	// 		});
-
-	// 		// Force scroll after bot message
-	// 		if (chatMessageList) {
-	// 			(chatMessageList as any).forceScrollToBottom();
-	// 		}
-	// 	} catch (error) {
-	// 		// Add error message
-	// 		this.chatContext.addMessage({
-	// 			sender: "bot",
-	// 			text: "Sorry, I encountered an error. Please try again.",
-	// 			time: this.getCurrentTime(),
-	// 		});
-
-	// 		// Force scroll after error message
-	// 		if (chatMessageList) {
-	// 			(chatMessageList as any).forceScrollToBottom();
-	// 		}
-	// 	} finally {
-	// 		this.chatContext.setLoading(false);
-	// 	}
-
-	// 	if (
-	// 		userMessage.includes("no, thanks") ||
-	// 		userMessage.includes("no thanks") ||
-	// 		userMessage.includes("that's all")
-	// 	) {
-	// 		this.handleEndConversation();
-	// 	}
-	// }
-
-	// private async scrollToBottom() {
-	// 	// Wait for the next frame to ensure DOM is updated
-	// 	await new Promise((resolve) => requestAnimationFrame(resolve));
-
-	// 	// Find the chat message list and scroll it
-	// 	const chatMessageList = this.shadowRoot?.querySelector("chat-message-list");
-	// 	if (chatMessageList) {
-	// 		const chatContainer =
-	// 			chatMessageList.shadowRoot?.querySelector(".chat-container");
-	// 		if (chatContainer) {
-	// 			chatContainer.scrollTo({
-	// 				top: chatContainer.scrollHeight,
-	// 				behavior: "smooth",
-	// 			});
-	// 		}
-	// 	}
-	// }
-
-	private getCurrentTime(): string {
-		return new Date().toLocaleTimeString([], {
-			hour: "2-digit",
-			minute: "2-digit",
-		});
-	}
 
 	// Render methods
 	render() {
