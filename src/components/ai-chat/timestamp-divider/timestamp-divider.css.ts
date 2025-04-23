@@ -32,8 +32,8 @@ export const styles = css`
 		width: 100px;
 		background: linear-gradient(
 			90deg,
-			rgba(178, 202, 231, 0.5) 0.68%,
-			rgba(181, 205, 247, 0.15) 97.3%
+			rgba(181, 205, 247, 0.15) 0.68%,
+			rgba(178, 202, 231, 0.5) 97.3%
 		);
 	}
 `;

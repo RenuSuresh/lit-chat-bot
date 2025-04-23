@@ -39,6 +39,7 @@ export const styles = css`
 	.chat-input {
 		flex-grow: 1;
 		padding: 16px;
+		max-width: 85%;
 
 		outline: none;
 		font-weight: 500;
@@ -82,6 +83,7 @@ export const styles = css`
 		right: 12px;
 		bottom: 8px;
 		font-size: 10px;
+		line-height: 16px;
 		color: #8897a2;
 		pointer-events: none;
 	}
