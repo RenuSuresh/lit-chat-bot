@@ -90,7 +90,7 @@ this.chatContext.addMessage({
 
 // Updating theme
 this.chatContext.updateTheme({
-	fontFamily: "Arial",
+	fontFamily: "Inter, sans-serif",
 	// ... other theme properties
 });
 
