@@ -109,13 +109,10 @@ export class ChatInput extends withChatContext(LitElement) {
 		}
 
 		// Reset chat input height
-		const chatInput = this.shadowRoot?.querySelector("chat-input");
+		const chatInput = this.shadowRoot?.getElementById("chat-input");
 		if (chatInput) {
-			const textarea = chatInput.shadowRoot?.querySelector("textarea");
-			if (textarea) {
-				textarea.style.height = "auto";
-				textarea.style.height = "18px"; // Reset to initial height
-			}
+			chatInput.style.height = "auto";
+			chatInput.style.height = "18px"; // Reset to initial height
 		}
 
 		try {
@@ -189,6 +186,7 @@ export class ChatInput extends withChatContext(LitElement) {
 							placeholder="Type your query here"
 							class="chat-input"
 							maxlength=${MAX_CHARS}
+							id="chat-input"
 						></textarea>
 						${this.charCount > 0
 							? html`
