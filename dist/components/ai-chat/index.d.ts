@@ -7,7 +7,7 @@ import "./chat-loader/chat-loader";
 import "../drawer/feedback/feedback-bottom-sheet";
 import "../drawer/popup-drawer/popup-drawer";
 declare const AIChat_base: (new (...args: any[]) => LitElement & {
-    chatContext: import("./context/chat-context.interface").ChatContext;
+    chatContext: import("../../context/chat-context.interface").ChatContext;
 }) & typeof LitElement;
 export declare class AIChat extends AIChat_base {
     static styles: import("lit").CSSResult[];

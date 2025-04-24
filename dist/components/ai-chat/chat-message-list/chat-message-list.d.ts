@@ -5,7 +5,7 @@ import "../message/bot-message";
 import "../message/user-message";
 import "../chat-loader/chat-loader";
 declare const ChatMessageList_base: (new (...args: any[]) => LitElement & {
-    chatContext: import("../context/chat-context.interface").ChatContext;
+    chatContext: import("../../../context/chat-context.interface").ChatContext;
 }) & typeof LitElement;
 export declare class ChatMessageList extends ChatMessageList_base {
     static styles: import("lit").CSSResult[];

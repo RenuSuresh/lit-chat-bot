@@ -1,6 +1,6 @@
 import { LitElement } from "lit";
 declare const ChatInput_base: (new (...args: any[]) => LitElement & {
-    chatContext: import("../context/chat-context.interface").ChatContext;
+    chatContext: import("../../../context/chat-context.interface").ChatContext;
 }) & typeof LitElement;
 export declare class ChatInput extends ChatInput_base {
     static styles: import("lit").CSSResult[];
@@ -8,7 +8,6 @@ export declare class ChatInput extends ChatInput_base {
     private charCount;
     sendMsgEnableImage: string;
     sendMsgDisableImage: string;
-    render(): import("lit-html").TemplateResult<1>;
     private _focusInput;
     private _handleFocus;
     private _adjustHeight;
@@ -18,5 +17,6 @@ export declare class ChatInput extends ChatInput_base {
     private emitSendMessage;
     private handleSendMessage;
     private getCurrentTime;
+    render(): import("lit-html").TemplateResult<1>;
 }
 export {};
