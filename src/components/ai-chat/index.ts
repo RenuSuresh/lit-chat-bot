@@ -2,7 +2,7 @@ import { LitElement, html } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { commonStyles } from "./styles.css";
 import { DEFAULT_IMAGES } from "./constants";
-import { withChatContext } from "./context/with-chat-context";
+import { withChatContext } from "../../context/with-chat-context";
 import type { ChatApiBody, Theme } from "./theme.interface";
 
 // Services

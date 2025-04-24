@@ -3,7 +3,7 @@ import { customElement, property, state } from "lit/decorators.js";
 
 import { commonStyles } from "../styles.css";
 import { styles } from "./chat-input.css";
-import { withChatContext } from "../context/with-chat-context";
+import { withChatContext } from "../../../context/with-chat-context";
 import { chatBotApi } from "../../../services/chat.service";
 const maxHeight = 72;
 const MAX_CHARS = 200;
