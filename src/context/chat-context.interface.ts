@@ -1,4 +1,7 @@
-import { ChatApiBody, ChatMessage } from "../theme.interface";
+import {
+	ChatApiBody,
+	ChatMessage,
+} from "../components/ai-chat/theme.interface";
 
 export interface ChatContext {
 	messages: ChatMessage[];

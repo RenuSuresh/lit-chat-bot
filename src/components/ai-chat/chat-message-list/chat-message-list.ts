@@ -3,7 +3,7 @@ import { customElement, property, state } from "lit/decorators.js";
 import { when } from "lit/directives/when.js";
 
 import "../timestamp-divider/timestamp-divider";
-import { withChatContext } from "../context/with-chat-context";
+import { withChatContext } from "../../../context/with-chat-context";
 import { commonStyles } from "../styles.css";
 import { styles } from "./chat-message-list.css";
 import { DEFAULT_IMAGES } from "../constants";
