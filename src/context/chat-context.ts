@@ -35,7 +35,11 @@ class ChatContextSingleton {
 				placeholderTextColor: "#8897a2",
 			},
 			addMessage: (message) => {
-				this._context.messages = [...this._context.messages, message];
+				if (Array.isArray(message)) {
+					this._context.messages = [...this._context.messages, ...message];
+				} else {
+					this._context.messages = [...this._context.messages, message];
+				}
 				ChatContextSingleton.notifyListeners();
 			},
 			setLoading: (loading) => {

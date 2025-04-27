@@ -9,7 +9,7 @@ import type { ChatInfo } from "../types/message.types";
 export class ChatInfoStrip extends LitElement {
 	static styles = [commonStyles, styles];
 
-	@property({ type: Object }) info?: ChatInfo;
+	@property({ type: Object }) info?: ChatInfo | undefined;
 	@property({ type: String }) message: string = "";
 
 	private get displayMessage() {

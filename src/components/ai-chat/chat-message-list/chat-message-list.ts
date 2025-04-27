@@ -59,7 +59,7 @@ export class ChatMessageList extends withChatContext(LitElement) {
 		if (changedProperties.has("chatContext")) {
 			const oldMessages = changedProperties.get("chatContext")?.messages || [];
 			const newMessages = this.chatContext.messages;
-
+			console.log(" new messages>>>>>>>>>>>", newMessages);
 			// Only scroll if there are new messages
 			if (newMessages.length > oldMessages.length) {
 				// Wait for the next frame to ensure DOM updates
@@ -107,7 +107,7 @@ export class ChatMessageList extends withChatContext(LitElement) {
 
 	private renderMessage(msg: ChatMessage) {
 		return when(
-			msg.sender === "bot",
+			msg.sender === "bot" || msg.type === MessageType.ANSWER,
 			() => html`
 				<bot-message .message=${msg} .botImage=${this.botImage}></bot-message>
 			`,
@@ -168,7 +168,7 @@ export class ChatMessageList extends withChatContext(LitElement) {
 						<chat-info-strip .info=${this.getStartChatInfo()}></chat-info-strip>
 					`
 				)}
-				${this.chatContext.messages.map((msg) => this.renderMessage(msg))}
+				${this.chatContext.messages?.map((msg) => this.renderMessage(msg))}
 				${this.renderLoadingIndicator()}
 				${when(
 					this.isConversationClosed,

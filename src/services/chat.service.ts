@@ -23,8 +23,28 @@ interface ConversationHistory {
 	participants: string[];
 }
 
+interface ChatAPIBody {
+	inputs: {
+		tags: string;
+		parentOrderId: string;
+		history?: string;
+		conversationID?: string;
+		feedback?: string;
+		sessions?: string;
+	};
+	user: string;
+}
+
+interface ChatAPIConfig {
+	body: ChatAPIBody;
+	headers: Record<string, string>;
+	theme: Record<string, any>;
+}
+
 class ChatBotApi {
 	private readonly basePath = "v1/chat-messages";
+
+	constructor(private config: ChatAPIConfig) {}
 
 	async sendMessage({
 		body,
@@ -40,8 +60,73 @@ class ChatBotApi {
 		const response = await api.post<SendMessageResponse>(
 			`${this.basePath}`,
 			{
-				inputs: body.inputs,
+				inputs: {
+					tags: body.inputs.tags,
+					parentOrderId: body.inputs.parentOrderId,
+				},
 				query: message,
+				response_mode: "blocking",
+				conversation_id: conversationId || undefined,
+				user: body.user,
+			},
+			{
+				headers,
+			}
+		);
+		return response;
+	}
+	// history: body.inputs.history,
+	// conversationID: body.inputs.conversationID,
+	// feedback: body.inputs.feedback,
+	// sessions: body.inputs.sessions,
+
+	async sendWelcomeMessage({
+		body,
+
+		conversationId,
+		headers,
+	}: {
+		body: any;
+		conversationId?: string;
+		headers?: Record<string, string>;
+	}): Promise<any> {
+		const response = await api.post<SendMessageResponse>(
+			`${this.basePath}`,
+			{
+				inputs: {
+					tags: body.inputs.tags,
+					parentOrderId: body.inputs.parentOrderId,
+				},
+				query: "",
+				response_mode: "blocking",
+				conversation_id: conversationId || undefined,
+				user: body.user,
+			},
+			{
+				headers,
+			}
+		);
+		return response;
+	}
+
+	async fetchConversationHistory({
+		body,
+		conversationId,
+		headers,
+	}: {
+		body: any;
+		conversationId?: string;
+		headers?: Record<string, string>;
+	}): Promise<any> {
+		const response = await api.post<SendMessageResponse>(
+			`${this.basePath}`,
+			{
+				inputs: {
+					tags: body.inputs.tags,
+					// parentOrderId: body.inputs.parentOrderId,
+					history: '{"limit":1,"last_conversation_id":""}',
+				},
+				query: "where is my order?",
 				response_mode: "blocking",
 				conversation_id: conversationId || undefined,
 				user: body.user,
@@ -103,4 +188,23 @@ class ChatBotApi {
 	}
 }
 
-export const chatBotApi = new ChatBotApi();
+// Create and export a singleton instance
+const defaultConfig: ChatAPIConfig = {
+	body: {
+		inputs: {
+			tags: JSON.stringify([]),
+			parentOrderId: "525744916255784960",
+			history: "",
+			conversationID: "",
+			feedback: "",
+			sessions: "",
+		},
+		user: "39783010",
+	},
+	headers: {},
+	theme: {},
+};
+
+export const chatBotApi = new ChatBotApi(defaultConfig);
+
+// export const chatBotApi = new ChatBotApi();

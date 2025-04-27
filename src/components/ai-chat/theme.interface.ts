@@ -25,7 +25,8 @@ export interface ChatMessage {
 
 export interface ChatApiBody {
 	chatAPI: {
-		body: Record<string, unknown>;
+		body?: Record<string, unknown>;
+		headers?: any;
 	};
 	customerCareNumber: string;
 }

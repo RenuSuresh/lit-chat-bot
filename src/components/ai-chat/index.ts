@@ -69,13 +69,43 @@ export class AIChat extends withChatContext(LitElement) {
 	// Lifecycle methods
 	connectedCallback() {
 		super.connectedCallback();
+
+		const tags = {
+			// merchantId: "Pharmeasy",
+			// vertical: "pharma",
+			mid: "1",
+			bu: "PE",
+			parentOrderId: "525744916255784960",
+		};
+
+		const chatAPI = {
+			body: {
+				inputs: {
+					tags: JSON.stringify(tags),
+					// parentOrderId: "525744916255784960",
+					conversationId: "", // only when history is required
+				},
+				user: "39783010",
+			},
+			headers: {},
+			theme: {},
+		};
+
+		const setupChatSession = () => {
+			sessionStorage.setItem(
+				"chatbotData",
+				JSON.stringify({ chatAPI, conversationId: "123" })
+			);
+		};
+
+		setupChatSession();
 		this.initializeSessionStorage();
 		this.loadComponents();
 		this.chatContext.updateTheme(this.theme);
 		this.resetInactivityTimer();
 	}
 
-	firstUpdated() {
+	async firstUpdated() {
 		// Add observer for chat input height changes
 		const chatInput = this.shadowRoot?.querySelector("chat-input");
 
@@ -87,6 +117,22 @@ export class AIChat extends withChatContext(LitElement) {
 				}
 			});
 			this.chatInputObserver.observe(chatInput);
+		}
+		const response = await chatBotApi.fetchConversationHistory({
+			body: this.chatContext.chatbotData.chatAPI.body,
+			conversationId: this.chatContext.conversationId,
+			headers: this.chatContext.chatbotData.chatAPI.headers,
+		});
+		this.chatContext.addMessage(JSON.parse(response.answer));
+		console.log("JSON.parse(response.answer)>>>>", JSON.parse(response.answer));
+
+		const root = document.querySelector("ai-chat");
+		// Get the chat message list and force scroll
+		const chatMessageList =
+			root?.shadowRoot?.querySelector("chat-message-list");
+		console.log("chatMessageList>>>>>>>>>>>", chatMessageList);
+		if (chatMessageList) {
+			(chatMessageList as any).forceScrollToBottom();
 		}
 	}
 
