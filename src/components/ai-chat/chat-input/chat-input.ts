@@ -5,6 +5,8 @@ import { commonStyles } from "../styles.css";
 import { styles } from "./chat-input.css";
 import { withChatContext } from "../../../context/with-chat-context";
 import { chatBotApi } from "../../../services/chat.service";
+import { safeJsonParse } from "../../../utils/json.util";
+
 const maxHeight = 72;
 const MAX_CHARS = 200;
 
@@ -115,6 +117,7 @@ export class ChatInput extends withChatContext(LitElement) {
 			chatInput.style.height = "18px"; // Reset to initial height
 		}
 
+		this.chatContext.setConversationId("de3fc849-7f4d-4610-93d4-419787f4d09e");
 		try {
 			const response = await chatBotApi.sendMessage({
 				body: this.chatContext.chatbotData.chatAPI.body,
@@ -124,16 +127,9 @@ export class ChatInput extends withChatContext(LitElement) {
 
 			this.chatContext.setConversationId(response.conversation_id);
 
-			const botMessage =
-				JSON.parse(response.answer).assistantLastMessage ||
-				"Sorry, I encountered an error. Please try again.";
+			const botMessage: any = safeJsonParse(response.answer);
 
-			// Add bot message
-			this.chatContext.addMessage({
-				type: "answer",
-				text: botMessage,
-				time: this.getCurrentTime(),
-			});
+			this.chatContext.addMessage(botMessage);
 
 			// Force scroll after bot message
 			if (chatMessageList) {

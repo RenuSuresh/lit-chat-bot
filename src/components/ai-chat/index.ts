@@ -83,8 +83,8 @@ export class AIChat extends withChatContext(LitElement) {
 			body: {
 				inputs: {
 					tags: JSON.stringify(tags),
-					// parentOrderId: "525744916255784960",
-					conversationId: "", // only when history is required
+					parentOrderId: "525744916255784960",
+					// only when history is required
 				},
 				user: "39783010",
 			},
@@ -93,10 +93,7 @@ export class AIChat extends withChatContext(LitElement) {
 		};
 
 		const setupChatSession = () => {
-			sessionStorage.setItem(
-				"chatbotData",
-				JSON.stringify({ chatAPI, conversationId: "123" })
-			);
+			sessionStorage.setItem("chatbotData", JSON.stringify({ chatAPI }));
 		};
 
 		setupChatSession();

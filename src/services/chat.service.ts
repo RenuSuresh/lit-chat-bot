@@ -63,6 +63,7 @@ class ChatBotApi {
 				inputs: {
 					tags: body.inputs.tags,
 					parentOrderId: body.inputs.parentOrderId,
+					conversation_id: conversationId || undefined,
 				},
 				query: message,
 				response_mode: "blocking",
@@ -96,6 +97,7 @@ class ChatBotApi {
 				inputs: {
 					tags: body.inputs.tags,
 					parentOrderId: body.inputs.parentOrderId,
+					conversation_id: conversationId || undefined,
 				},
 				query: "",
 				response_mode: "blocking",
@@ -126,7 +128,7 @@ class ChatBotApi {
 					// parentOrderId: body.inputs.parentOrderId,
 					history: '{"limit":1,"last_conversation_id":""}',
 				},
-				query: "where is my order?",
+				query: " ",
 				response_mode: "blocking",
 				conversation_id: conversationId || undefined,
 				user: body.user,
