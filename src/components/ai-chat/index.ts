@@ -3,7 +3,7 @@ import { customElement, property, state } from "lit/decorators.js";
 import { commonStyles } from "./styles.css";
 import { DEFAULT_IMAGES } from "./constants";
 import { withChatContext } from "../../context/with-chat-context";
-import type { ChatApiBody, Theme } from "./theme.interface";
+import type { ChatApiBody, ChatMessage, Theme } from "./theme.interface";
 
 // Services
 import { chatBotApi } from "../../services/chat.service";
@@ -15,6 +15,7 @@ import "./chat-input/chat-input";
 import "./chat-loader/chat-loader";
 import "../drawer/feedback/feedback-bottom-sheet";
 import "../drawer/popup-drawer/popup-drawer";
+import { safeJsonParse } from "../../utils/json.util";
 
 @customElement("ai-chat")
 export class AIChat extends withChatContext(LitElement) {
@@ -123,17 +124,22 @@ export class AIChat extends withChatContext(LitElement) {
 			conversationId: this.chatContext.conversationId,
 			headers: this.chatContext.chatbotData.chatAPI.headers,
 		});
-		this.chatContext.addMessage(JSON.parse(response.answer));
-		console.log("JSON.parse(response.answer)>>>>", JSON.parse(response.answer));
+
+		const answer: any = safeJsonParse(response.answer);
+		const messages: any = safeJsonParse(answer.messages);
+		this.chatContext.addMessage(messages);
 
 		const root = document.querySelector("ai-chat");
 		// Get the chat message list and force scroll
 		const chatMessageList =
 			root?.shadowRoot?.querySelector("chat-message-list");
-		console.log("chatMessageList>>>>>>>>>>>", chatMessageList);
+
 		if (chatMessageList) {
-			(chatMessageList as any).forceScrollToBottom();
+			chatMessageList.scrollTop = chatMessageList.scrollHeight;
 		}
+		// if (chatMessageList) {
+		// 	(chatMessageList as any).forceScrollToBottom();
+		// }
 	}
 
 	disconnectedCallback() {

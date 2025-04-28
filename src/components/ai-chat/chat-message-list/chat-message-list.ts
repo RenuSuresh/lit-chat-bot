@@ -7,8 +7,12 @@ import { withChatContext } from "../../../context/with-chat-context";
 import { commonStyles } from "../styles.css";
 import { styles } from "./chat-message-list.css";
 import { DEFAULT_IMAGES } from "../constants";
-import type { ChatMessage, ChatInfo } from "../types/message.types";
+import type {
+	ChatMessage as MessageTypesChatMessage,
+	ChatInfo,
+} from "../types/message.types";
 import { MessageType } from "../types/message.types";
+import type { ChatMessage } from "../theme.interface";
 import "../chat-info-strip/chat-info-strip";
 import "../message/bot-message";
 import "../message/user-message";
@@ -27,70 +31,68 @@ export class ChatMessageList extends withChatContext(LitElement) {
 	private chatContainer: HTMLElement | null = null;
 	private observer: MutationObserver | null = null;
 
-	connectedCallback() {
-		super.connectedCallback();
+	private get messages(): ChatMessage[] {
+		return this.chatContext.messages || [];
 	}
 
-	disconnectedCallback() {
-		super.disconnectedCallback();
-		if (this.observer) {
-			this.observer.disconnect();
+	private scrollToBottom(shouldAnimate = false) {
+		if (!this.chatContainer) return;
+
+		if (shouldAnimate) {
+			this.chatContainer.scrollTo({
+				top: this.chatContainer.scrollHeight,
+				behavior: "smooth",
+			});
+		} else {
+			this.chatContainer.scrollTop = this.chatContainer.scrollHeight;
 		}
+	}
+
+	private isBotMessage(msg: ChatMessage): boolean {
+		return msg.type === "bot" || msg.type === MessageType.ANSWER;
+	}
+
+	private convertToMessageTypes(msg: ChatMessage): MessageTypesChatMessage {
+		return {
+			text: msg.text,
+			time: msg.time,
+			sender:
+				msg.type === "bot" || msg.type === MessageType.ANSWER ? "bot" : "user",
+			type: msg.type === MessageType.ANSWER ? MessageType.ANSWER : undefined,
+		};
+	}
+
+	private renderMessage(msg: ChatMessage) {
+		const convertedMsg = this.convertToMessageTypes(msg);
+		return when(
+			this.isBotMessage(msg),
+			() => html`
+				<bot-message
+					.message=${convertedMsg}
+					.botImage=${this.botImage}
+				></bot-message>
+			`,
+			() => html` <user-message .message=${convertedMsg}></user-message> `
+		);
 	}
 
 	firstUpdated() {
-		this.chatContainer = this.shadowRoot?.getElementById(
-			"chat-container"
-		) as HTMLElement;
-		if (this.chatContainer && this.observer) {
-			this.observer.observe(this.chatContainer, {
-				childList: true,
-				characterData: true,
-				subtree: true,
-			});
-		}
-		this.scrollToBottom();
+		this.chatContainer =
+			this.shadowRoot?.getElementById("chat-container") || null;
+		requestAnimationFrame(() => this.scrollToBottom(false));
 	}
 
 	updated(changedProperties: Map<string, any>) {
 		super.updated(changedProperties);
 
-		// Check if messages were updated
 		if (changedProperties.has("chatContext")) {
 			const oldMessages = changedProperties.get("chatContext")?.messages || [];
-			const newMessages = this.chatContext.messages;
-			console.log(" new messages>>>>>>>>>>>", newMessages);
-			// Only scroll if there are new messages
-			if (newMessages.length > oldMessages.length) {
-				// Wait for the next frame to ensure DOM updates
-				requestAnimationFrame(() => {
-					// Add a small delay to ensure content is rendered
-					setTimeout(() => {
-						this.scrollToBottom();
-					}, 50);
-				});
-			}
-		}
+			const hasNewMessages = this.messages.length > oldMessages.length;
 
-		// Also scroll for other relevant changes
-		if (
-			changedProperties.has("isConversationClosed") ||
-			changedProperties.has("isStartChatReached") ||
-			changedProperties.has("isTransferCallReached")
-		) {
-			this.scrollToBottom();
+			requestAnimationFrame(() => {
+				this.scrollToBottom(hasNewMessages);
+			});
 		}
-	}
-
-	private scrollToBottom() {
-		requestAnimationFrame(() => {
-			if (this.chatContainer) {
-				this.chatContainer.scrollTo({
-					top: this.chatContainer.scrollHeight,
-					behavior: "smooth",
-				});
-			}
-		});
 	}
 
 	private renderTimestampDivider() {
@@ -102,16 +104,6 @@ export class ChatMessageList extends withChatContext(LitElement) {
 					.showFullDate=${true}
 				></timestamp-divider>
 			`
-		);
-	}
-
-	private renderMessage(msg: ChatMessage) {
-		return when(
-			msg.sender === "bot" || msg.type === MessageType.ANSWER,
-			() => html`
-				<bot-message .message=${msg} .botImage=${this.botImage}></bot-message>
-			`,
-			() => html` <user-message .message=${msg}></user-message> `
 		);
 	}
 
@@ -159,6 +151,8 @@ export class ChatMessageList extends withChatContext(LitElement) {
 	}
 
 	render() {
+		requestAnimationFrame(() => this.scrollToBottom(false));
+
 		return html`
 			<div class="chat-container" id="chat-container">
 				${this.renderTimestampDivider()}
@@ -168,7 +162,7 @@ export class ChatMessageList extends withChatContext(LitElement) {
 						<chat-info-strip .info=${this.getStartChatInfo()}></chat-info-strip>
 					`
 				)}
-				${this.chatContext.messages?.map((msg) => this.renderMessage(msg))}
+				${this.messages.map((msg) => this.renderMessage(msg))}
 				${this.renderLoadingIndicator()}
 				${when(
 					this.isConversationClosed,

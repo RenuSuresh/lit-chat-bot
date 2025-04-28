@@ -95,7 +95,7 @@ export class ChatInput extends withChatContext(LitElement) {
 
 		// Add user message
 		this.chatContext.addMessage({
-			sender: "user",
+			type: "query",
 			text: userMessage,
 			time: this.getCurrentTime(),
 		});
@@ -130,7 +130,7 @@ export class ChatInput extends withChatContext(LitElement) {
 
 			// Add bot message
 			this.chatContext.addMessage({
-				sender: "bot",
+				type: "answer",
 				text: botMessage,
 				time: this.getCurrentTime(),
 			});
@@ -142,7 +142,7 @@ export class ChatInput extends withChatContext(LitElement) {
 		} catch (error) {
 			// Add error message
 			this.chatContext.addMessage({
-				sender: "bot",
+				type: "answer",
 				text: "Sorry, I encountered an error. Please try again.",
 				time: this.getCurrentTime(),
 			});

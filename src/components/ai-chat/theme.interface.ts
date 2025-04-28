@@ -18,7 +18,7 @@ export interface Theme {
 }
 
 export interface ChatMessage {
-	sender: "user" | "bot";
+	type: "user" | "bot" | "query" | "answer";
 	text: string;
 	time: string;
 }
