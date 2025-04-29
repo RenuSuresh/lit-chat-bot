@@ -8,6 +8,7 @@ class ChatContextSingleton {
 	private constructor() {
 		this._context = {
 			messages: [],
+			messagesData: [],
 			isLoading: false,
 			conversationId: "",
 			chatbotData: {
@@ -33,6 +34,10 @@ class ChatContextSingleton {
 				inputBorderColor: "#e6ebf4",
 				inputTextColor: "#30363c",
 				placeholderTextColor: "#8897a2",
+			},
+			addMessages: (messages) => {
+				this._context.messagesData = [...this._context.messagesData, messages];
+				ChatContextSingleton.notifyListeners();
 			},
 			addMessage: (message) => {
 				if (Array.isArray(message)) {

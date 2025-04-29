@@ -20,6 +20,12 @@ import "../chat-loader/chat-loader";
 import { safeJsonParse } from "../../../utils/json.util";
 import { chatBotApi } from "../../../services/chat.service";
 
+interface SessionMessage {
+	text: string;
+	time: number;
+	type: string;
+}
+
 @customElement("chat-message-list")
 export class ChatMessageList extends withChatContext(LitElement) {
 	static styles = [commonStyles, styles];
@@ -34,7 +40,17 @@ export class ChatMessageList extends withChatContext(LitElement) {
 	private observer: MutationObserver | null = null;
 
 	private get messages(): ChatMessage[] {
-		return this.chatContext.messages || [];
+		if (!this.chatContext.messagesData?.length) return [];
+
+		return this.chatContext.messagesData.flatMap((sessionData: any) => {
+			const messages =
+				safeJsonParse<SessionMessage[]>(sessionData.messages) || [];
+			return messages.map((msg) => ({
+				text: msg.text,
+				time: this.formatTime(msg.time),
+				type: msg.type,
+			}));
+		});
 	}
 
 	private scrollToBottom(shouldAnimate = false) {
@@ -88,6 +104,7 @@ export class ChatMessageList extends withChatContext(LitElement) {
 		const answer: any = safeJsonParse(response.answer);
 		const messages: any = safeJsonParse(answer.messages);
 		this.chatContext.addMessage(messages);
+		this.chatContext.addMessages(answer);
 
 		this.chatContainer =
 			this.shadowRoot?.getElementById("chat-container") || null;
@@ -167,30 +184,57 @@ export class ChatMessageList extends withChatContext(LitElement) {
 		});
 	}
 
+	private formatTime(epochTime: number): string {
+		const date = new Date(epochTime);
+		return date.toLocaleTimeString([], {
+			hour: "2-digit",
+			minute: "2-digit",
+			hour12: true,
+		});
+	}
+
+	private renderMessages(sessionData: any) {
+		const sessionMessages =
+			safeJsonParse<SessionMessage[]>(sessionData.messages) || [];
+
+		return html`
+			${this.renderTimestampDivider()}
+			${when(
+				this.isStartChatReached,
+				() => html`
+					<chat-info-strip .info=${this.getStartChatInfo()}></chat-info-strip>
+				`
+			)}
+			${sessionMessages.map((msg) => {
+				const message: ChatMessage = {
+					text: msg.text,
+					time: this.formatTime(msg.time),
+					type: msg.type,
+				};
+				return this.renderMessage(message);
+			})}
+			${this.renderLoadingIndicator()}
+			${when(
+				sessionData.session === "closed",
+				() => html`
+					<chat-info-strip
+						.info=${this.isTransferCallReached
+							? this.getTransferCallInfo()
+							: this.getConversationCloseInfo()}
+					></chat-info-strip>
+				`
+			)}
+		`;
+	}
+
 	render() {
 		requestAnimationFrame(() => this.scrollToBottom(false));
 
 		return html`
 			<div class="chat-container" id="chat-container">
-				${this.renderTimestampDivider()}
-				${when(
-					this.isStartChatReached,
-					() => html`
-						<chat-info-strip .info=${this.getStartChatInfo()}></chat-info-strip>
-					`
-				)}
-				${this.messages.map((msg) => this.renderMessage(msg))}
-				${this.renderLoadingIndicator()}
-				${when(
-					this.isConversationClosed,
-					() => html`
-						<chat-info-strip
-							.info=${this.isTransferCallReached
-								? this.getTransferCallInfo()
-								: this.getConversationCloseInfo()}
-						></chat-info-strip>
-					`
-				)}
+				${this.chatContext.messagesData.map((sessionData) => {
+					return this.renderMessages(sessionData);
+				})}
 			</div>
 		`;
 	}

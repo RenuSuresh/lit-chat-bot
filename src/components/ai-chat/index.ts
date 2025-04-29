@@ -73,16 +73,15 @@ export class AIChat extends withChatContext(LitElement) {
 		const tags = {
 			// merchantId: "Pharmeasy",
 			// vertical: "pharma",
+			parentOrderId: "525744916255784960",
 			mid: "1",
 			bu: "PE",
-			parentOrderId: "525744916255784960",
 		};
 
 		const chatAPI = {
 			body: {
 				inputs: {
 					tags: JSON.stringify(tags),
-					parentOrderId: "525744916255784960",
 					// only when history is required
 				},
 				user: "39783010",

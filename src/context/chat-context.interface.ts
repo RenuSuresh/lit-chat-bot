@@ -5,6 +5,7 @@ import {
 
 export interface ChatContext {
 	messages: ChatMessage[];
+	messagesData: ChatMessage[];
 	isLoading: boolean;
 	conversationId: string;
 	chatbotData: ChatApiBody;
@@ -31,4 +32,5 @@ export interface ChatContext {
 	setConversationId: (id: string) => void;
 	setChatbotData: (data: ChatApiBody) => void;
 	updateTheme: (theme: Partial<ChatContext["theme"]>) => void;
+	addMessages: (messages: ChatMessage[]) => void;
 }
