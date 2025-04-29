@@ -17,6 +17,8 @@ import "../chat-info-strip/chat-info-strip";
 import "../message/bot-message";
 import "../message/user-message";
 import "../chat-loader/chat-loader";
+import { safeJsonParse } from "../../../utils/json.util";
+import { chatBotApi } from "../../../services/chat.service";
 
 @customElement("chat-message-list")
 export class ChatMessageList extends withChatContext(LitElement) {
@@ -76,9 +78,24 @@ export class ChatMessageList extends withChatContext(LitElement) {
 		);
 	}
 
-	firstUpdated() {
+	async firstUpdated() {
+		const response = await chatBotApi.fetchConversationHistory({
+			body: this.chatContext.chatbotData.chatAPI.body,
+			conversationId: this.chatContext.conversationId,
+			headers: this.chatContext.chatbotData.chatAPI.headers,
+		});
+
+		const answer: any = safeJsonParse(response.answer);
+		const messages: any = safeJsonParse(answer.messages);
+		this.chatContext.addMessage(messages);
+
 		this.chatContainer =
 			this.shadowRoot?.getElementById("chat-container") || null;
+
+		if (this.chatContainer) {
+			this.chatContainer.scrollTop = this.chatContainer.scrollHeight;
+		}
+
 		requestAnimationFrame(() => this.scrollToBottom(false));
 	}
 

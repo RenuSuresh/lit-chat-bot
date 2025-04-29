@@ -126,7 +126,8 @@ class ChatBotApi {
 				inputs: {
 					tags: body.inputs.tags,
 					// parentOrderId: body.inputs.parentOrderId,
-					history: '{"limit":1,"last_conversation_id":""}',
+					history:
+						'{"limit":1,"last_conversation_id":"539d42f6-1a86-4633-ab06-d1420873ee05"}',
 				},
 				query: " ",
 				response_mode: "blocking",

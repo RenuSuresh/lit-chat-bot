@@ -15,7 +15,6 @@ import "./chat-input/chat-input";
 import "./chat-loader/chat-loader";
 import "../drawer/feedback/feedback-bottom-sheet";
 import "../drawer/popup-drawer/popup-drawer";
-import { safeJsonParse } from "../../utils/json.util";
 
 @customElement("ai-chat")
 export class AIChat extends withChatContext(LitElement) {
@@ -116,27 +115,6 @@ export class AIChat extends withChatContext(LitElement) {
 			});
 			this.chatInputObserver.observe(chatInput);
 		}
-		const response = await chatBotApi.fetchConversationHistory({
-			body: this.chatContext.chatbotData.chatAPI.body,
-			conversationId: this.chatContext.conversationId,
-			headers: this.chatContext.chatbotData.chatAPI.headers,
-		});
-
-		const answer: any = safeJsonParse(response.answer);
-		const messages: any = safeJsonParse(answer.messages);
-		this.chatContext.addMessage(messages);
-
-		const root = document.querySelector("ai-chat");
-		// Get the chat message list and force scroll
-		const chatMessageList =
-			root?.shadowRoot?.querySelector("chat-message-list");
-
-		if (chatMessageList) {
-			chatMessageList.scrollTop = chatMessageList.scrollHeight;
-		}
-		// if (chatMessageList) {
-		// 	(chatMessageList as any).forceScrollToBottom();
-		// }
 	}
 
 	disconnectedCallback() {
