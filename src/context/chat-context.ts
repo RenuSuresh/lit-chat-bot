@@ -1,5 +1,7 @@
 import { ReactiveController, ReactiveControllerHost } from "lit";
-import { ChatContext } from "./chat-context.interface";
+import { ChatContext, MessageGroup } from "./chat-context.interface";
+import { safeJsonParse, safeJsonStringify } from "../utils/json.util";
+import { ChatMessage } from "../components/ai-chat/theme.interface";
 
 class ChatContextSingleton {
 	private static instance: ChatContextSingleton;
@@ -37,6 +39,39 @@ class ChatContextSingleton {
 			},
 			addMessages: (messages) => {
 				this._context.messagesData = [...this._context.messagesData, messages];
+				ChatContextSingleton.notifyListeners();
+			},
+			appendMessage: (message) => {
+				if (this._context.messagesData.length === 0) {
+					// If no messages exist, create a new message group
+					this._context.messagesData = [
+						{
+							type: message.type,
+							text: message.text,
+							time: message.time,
+							messages: safeJsonStringify([message]),
+						},
+					];
+				} else {
+					// Get the last message group
+					const lastMessageGroup =
+						this._context.messagesData[this._context.messagesData.length - 1];
+					const parsedMessages = safeJsonParse<ChatMessage[]>(
+						lastMessageGroup.messages
+					);
+					const messagesArray = Array.isArray(parsedMessages)
+						? parsedMessages
+						: [];
+
+					// Add the new message to the group
+					messagesArray.push(message);
+
+					// Update the last message group with the new messages
+					this._context.messagesData[this._context.messagesData.length - 1] = {
+						...lastMessageGroup,
+						messages: safeJsonStringify(messagesArray),
+					};
+				}
 				ChatContextSingleton.notifyListeners();
 			},
 			addMessage: (message) => {

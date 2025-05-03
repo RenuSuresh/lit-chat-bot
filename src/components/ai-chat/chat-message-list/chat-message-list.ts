@@ -35,6 +35,9 @@ export class ChatMessageList extends withChatContext(LitElement) {
 	@property({ type: Boolean }) isConversationClosed = false;
 	@property({ type: Boolean }) isStartChatReached = false;
 	@property({ type: Boolean }) isTransferCallReached = false;
+	@state() private isLoadingMore = false;
+	@state() private hasMoreMessages = true;
+	private scrollPositionBeforeLoad: number = 0;
 
 	private chatContainer: HTMLElement | null = null;
 	private observer: MutationObserver | null = null;
@@ -105,6 +108,25 @@ export class ChatMessageList extends withChatContext(LitElement) {
 		const messages: any = safeJsonParse(answer.messages);
 		this.chatContext.addMessage(messages);
 		this.chatContext.addMessages(answer);
+		this.chatContext.setConversationId(answer.conversationId);
+
+		const messagesData = this.chatContext.messagesData;
+		const lastMessage = messagesData[messagesData.length - 1];
+
+		if (!messages || lastMessage.session === "closed") {
+			const welcomeResponse = await chatBotApi.sendWelcomeMessage({
+				body: this.chatContext.chatbotData.chatAPI.body,
+				conversationId: "",
+				headers: this.chatContext.chatbotData.chatAPI.headers,
+			});
+			const answer: any = safeJsonParse(welcomeResponse.answer);
+			const welcomeMessage = {
+				messages: welcomeResponse.answer,
+				conversationId: "",
+			};
+			this.chatContext.addMessages(welcomeMessage);
+			this.chatContext.setConversationId(welcomeResponse.conversation_id);
+		}
 
 		this.chatContainer =
 			this.shadowRoot?.getElementById("chat-container") || null;
@@ -114,6 +136,74 @@ export class ChatMessageList extends withChatContext(LitElement) {
 		}
 
 		requestAnimationFrame(() => this.scrollToBottom(false));
+		console.log(
+			"chatContainer>>>>>",
+			this.chatContainer?.scrollHeight,
+			this.chatContainer.clientHeight
+		);
+
+		this.chatContainer?.addEventListener(
+			"scroll",
+			this.handleScroll.bind(this)
+		);
+	}
+
+	private async handleScroll() {
+		if (!this.chatContainer || this.isLoadingMore || !this.hasMoreMessages)
+			return;
+
+		// Check if we're near the top (for loading older messages)
+		const { scrollTop, scrollHeight, clientHeight } = this.chatContainer;
+		const threshold = 10; // pixels from top
+
+		if (
+			scrollTop <= threshold &&
+			this.chatContainer.scrollHeight > clientHeight
+		) {
+			this.scrollPositionBeforeLoad = scrollHeight;
+			await this.loadMoreMessages();
+		}
+	}
+
+	private async loadMoreMessages() {
+		this.isLoadingMore = true;
+
+		try {
+			// Fetch older messages
+			// const response = await chatBotApi.fetchOlderMessages({
+			//   body: this.chatContext.chatbotData.chatAPI.body,
+			//   conversationId: this.chatContext.conversationId,
+			//   headers: this.chatContext.chatbotData.chatAPI.headers,
+			//   beforeTimestamp: this.getOldestMessageTimestamp()
+			// });
+			const messagesData = this.chatContext.messagesData;
+			const lastMessage = messagesData[messagesData.length - 1];
+			console.log("lastMessage>>>>>", lastMessage);
+			// const response = await chatBotApi.fetchConversationHistory({
+			// 	body: this.chatContext.chatbotData.chatAPI.body,
+			// 	conversationId: lastMessage.conversationId,
+			// 	headers: this.chatContext.chatbotData.chatAPI.headers,
+			// });
+			const response = {};
+
+			if (response.messages && response.messages.length > 0) {
+				// this.chatContext.prependMessages(response.messages);
+				this.chatContext.addMessages(response);
+			} else {
+				this.hasMoreMessages = false;
+			}
+		} catch (error) {
+			console.error("Error loading more messages:", error);
+		} finally {
+			this.isLoadingMore = false;
+
+			// Restore scroll position after prepending messages
+			if (this.chatContainer) {
+				const newScrollHeight = this.chatContainer.scrollHeight;
+				this.chatContainer.scrollTop =
+					newScrollHeight - this.scrollPositionBeforeLoad;
+			}
+		}
 	}
 
 	updated(changedProperties: Map<string, any>) {
@@ -211,7 +301,7 @@ export class ChatMessageList extends withChatContext(LitElement) {
 					time: this.formatTime(msg.time),
 					type: msg.type,
 				};
-				return this.renderMessage(message);
+				return msg.text.trim("") && this.renderMessage(message);
 			})}
 			${this.renderLoadingIndicator()}
 			${when(
@@ -229,7 +319,6 @@ export class ChatMessageList extends withChatContext(LitElement) {
 
 	render() {
 		requestAnimationFrame(() => this.scrollToBottom(false));
-
 		return html`
 			<div class="chat-container" id="chat-container">
 				${this.chatContext.messagesData.map((sessionData) => {

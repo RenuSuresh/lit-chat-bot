@@ -3,9 +3,13 @@ import {
 	ChatMessage,
 } from "../components/ai-chat/theme.interface";
 
+export interface MessageGroup extends ChatMessage {
+	messages: string; // JSON stringified array of ChatMessage
+}
+
 export interface ChatContext {
 	messages: ChatMessage[];
-	messagesData: ChatMessage[];
+	messagesData: MessageGroup[];
 	isLoading: boolean;
 	conversationId: string;
 	chatbotData: ChatApiBody;
@@ -32,5 +36,6 @@ export interface ChatContext {
 	setConversationId: (id: string) => void;
 	setChatbotData: (data: ChatApiBody) => void;
 	updateTheme: (theme: Partial<ChatContext["theme"]>) => void;
-	addMessages: (messages: ChatMessage[]) => void;
+	addMessages: (messages: MessageGroup) => void;
+	appendMessage: (message: ChatMessage) => void;
 }

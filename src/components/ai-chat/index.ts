@@ -73,7 +73,6 @@ export class AIChat extends withChatContext(LitElement) {
 		const tags = {
 			// merchantId: "Pharmeasy",
 			// vertical: "pharma",
-			parentOrderId: "525744916255784960",
 			mid: "1",
 			bu: "PE",
 		};

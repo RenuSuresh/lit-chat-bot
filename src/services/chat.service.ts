@@ -83,7 +83,6 @@ class ChatBotApi {
 
 	async sendWelcomeMessage({
 		body,
-
 		conversationId,
 		headers,
 	}: {
@@ -97,11 +96,11 @@ class ChatBotApi {
 				inputs: {
 					tags: body.inputs.tags,
 					parentOrderId: body.inputs.parentOrderId,
-					conversation_id: conversationId || undefined,
+					conversation_id: "",
 				},
-				query: "",
+				query: " ",
 				response_mode: "blocking",
-				conversation_id: conversationId || undefined,
+				conversation_id: "",
 				user: body.user,
 			},
 			{
@@ -126,8 +125,7 @@ class ChatBotApi {
 				inputs: {
 					tags: body.inputs.tags,
 					// parentOrderId: body.inputs.parentOrderId,
-					history:
-						'{"limit":1,"last_conversation_id":"89a3867b-7734-4bb5-a9c7-30f44a9d328f"}',
+					history: '{"limit":1,"last_conversation_id":""}',
 				},
 				query: " ",
 				response_mode: "blocking",

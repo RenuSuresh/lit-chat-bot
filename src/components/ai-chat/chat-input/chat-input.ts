@@ -96,7 +96,7 @@ export class ChatInput extends withChatContext(LitElement) {
 		const userMessage = e.detail.text;
 
 		// Add user message
-		this.chatContext.addMessage({
+		this.chatContext.appendMessage({
 			type: "query",
 			text: userMessage,
 			time: this.getCurrentTime(),
@@ -117,7 +117,6 @@ export class ChatInput extends withChatContext(LitElement) {
 			chatInput.style.height = "18px"; // Reset to initial height
 		}
 
-		this.chatContext.setConversationId("de3fc849-7f4d-4610-93d4-419787f4d09e");
 		try {
 			const response = await chatBotApi.sendMessage({
 				body: this.chatContext.chatbotData.chatAPI.body,
@@ -125,11 +124,9 @@ export class ChatInput extends withChatContext(LitElement) {
 				conversationId: this.chatContext.conversationId,
 			});
 
-			this.chatContext.setConversationId(response.conversation_id);
-
 			const botMessage: any = safeJsonParse(response.answer);
 
-			this.chatContext.addMessage(botMessage);
+			this.chatContext.appendMessage(botMessage[0]);
 
 			// Force scroll after bot message
 			if (chatMessageList) {
@@ -137,7 +134,7 @@ export class ChatInput extends withChatContext(LitElement) {
 			}
 		} catch (error) {
 			// Add error message
-			this.chatContext.addMessage({
+			this.chatContext.appendMessage({
 				type: "answer",
 				text: "Sorry, I encountered an error. Please try again.",
 				time: this.getCurrentTime(),
