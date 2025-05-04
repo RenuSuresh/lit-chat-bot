@@ -74,14 +74,14 @@ class ChatContextSingleton {
 				}
 				ChatContextSingleton.notifyListeners();
 			},
-			addMessage: (message) => {
-				if (Array.isArray(message)) {
-					this._context.messages = [...this._context.messages, ...message];
-				} else {
-					this._context.messages = [...this._context.messages, message];
-				}
-				ChatContextSingleton.notifyListeners();
-			},
+			// addMessage: (message) => {
+			// 	if (Array.isArray(message)) {
+			// 		this._context.messages = [...this._context.messages, ...message];
+			// 	} else {
+			// 		this._context.messages = [...this._context.messages, message];
+			// 	}
+			// 	ChatContextSingleton.notifyListeners();
+			// },
 			setLoading: (loading) => {
 				this._context.isLoading = loading;
 				ChatContextSingleton.notifyListeners();
@@ -96,6 +96,10 @@ class ChatContextSingleton {
 			},
 			updateTheme: (theme) => {
 				this._context.theme = { ...this._context.theme, ...theme };
+				ChatContextSingleton.notifyListeners();
+			},
+			prependMessages: (messages) => {
+				this._context.messagesData = [messages, ...this._context.messagesData];
 				ChatContextSingleton.notifyListeners();
 			},
 		};

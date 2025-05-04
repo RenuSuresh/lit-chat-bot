@@ -45,15 +45,17 @@ export class ChatMessageList extends withChatContext(LitElement) {
 	private get messages(): ChatMessage[] {
 		if (!this.chatContext.messagesData?.length) return [];
 
-		return this.chatContext.messagesData.flatMap((sessionData: any) => {
-			const messages =
-				safeJsonParse<SessionMessage[]>(sessionData.messages) || [];
-			return messages.map((msg) => ({
-				text: msg.text,
-				time: this.formatTime(msg.time),
-				type: msg.type,
-			}));
-		});
+		return this.chatContext.messagesData.flatMap(
+			(sessionData: ExtendedMessageGroup) => {
+				const messages =
+					safeJsonParse<SessionMessage[]>(sessionData.messages) || [];
+				return messages.map((msg: SessionMessage) => ({
+					text: msg.text,
+					time: this.formatTime(msg.time),
+					type: msg.type,
+				}));
+			}
+		);
 	}
 
 	private scrollToBottom(shouldAnimate = false) {
@@ -106,8 +108,9 @@ export class ChatMessageList extends withChatContext(LitElement) {
 
 		const answer: any = safeJsonParse(response.answer);
 		const messages: any = safeJsonParse(answer.messages);
-		this.chatContext.addMessage(messages);
-		this.chatContext.addMessages(answer);
+		if (Object.keys(answer).length !== 0) {
+			this.chatContext.addMessages(answer);
+		}
 		this.chatContext.setConversationId(answer.conversationId);
 
 		const messagesData = this.chatContext.messagesData;
@@ -119,7 +122,6 @@ export class ChatMessageList extends withChatContext(LitElement) {
 				conversationId: "",
 				headers: this.chatContext.chatbotData.chatAPI.headers,
 			});
-			const answer: any = safeJsonParse(welcomeResponse.answer);
 			const welcomeMessage = {
 				messages: welcomeResponse.answer,
 				conversationId: "",
@@ -136,12 +138,12 @@ export class ChatMessageList extends withChatContext(LitElement) {
 		}
 
 		requestAnimationFrame(() => this.scrollToBottom(false));
-		console.log(
-			"chatContainer>>>>>",
-			this.chatContainer?.scrollHeight,
-			this.chatContainer.clientHeight
-		);
 
+		const { scrollTop } = this.chatContainer;
+
+		if (scrollTop === 0 && Object.keys(answer).length !== 0) {
+			this.handleScroll();
+		}
 		this.chatContainer?.addEventListener(
 			"scroll",
 			this.handleScroll.bind(this)
@@ -154,11 +156,11 @@ export class ChatMessageList extends withChatContext(LitElement) {
 
 		// Check if we're near the top (for loading older messages)
 		const { scrollTop, scrollHeight, clientHeight } = this.chatContainer;
-		const threshold = 10; // pixels from top
-
+		const threshold = 100; // pixels from top
 		if (
-			scrollTop <= threshold &&
-			this.chatContainer.scrollHeight > clientHeight
+			(scrollTop === threshold &&
+				this.chatContainer.scrollHeight > clientHeight) ||
+			scrollTop == 0
 		) {
 			this.scrollPositionBeforeLoad = scrollHeight;
 			await this.loadMoreMessages();
@@ -178,17 +180,22 @@ export class ChatMessageList extends withChatContext(LitElement) {
 			// });
 			const messagesData = this.chatContext.messagesData;
 			const lastMessage = messagesData[messagesData.length - 1];
-			console.log("lastMessage>>>>>", lastMessage);
-			// const response = await chatBotApi.fetchConversationHistory({
-			// 	body: this.chatContext.chatbotData.chatAPI.body,
-			// 	conversationId: lastMessage.conversationId,
-			// 	headers: this.chatContext.chatbotData.chatAPI.headers,
-			// });
-			const response = {};
+			const response = await chatBotApi.fetchConversationHistory({
+				body: this.chatContext.chatbotData.chatAPI.body,
+				conversationId: lastMessage.conversationId,
+				headers: this.chatContext.chatbotData.chatAPI.headers,
+			});
 
+			if (response.answer === "{}") {
+				const startOfConversation = {
+					isStartChatReached: true,
+				};
+				this.chatContext.prependMessages(startOfConversation);
+			}
+			// const response = {};
 			if (response.messages && response.messages.length > 0) {
 				// this.chatContext.prependMessages(response.messages);
-				this.chatContext.addMessages(response);
+				this.chatContext.prependMessages(response);
 			} else {
 				this.hasMoreMessages = false;
 			}
@@ -290,7 +297,7 @@ export class ChatMessageList extends withChatContext(LitElement) {
 		return html`
 			${this.renderTimestampDivider()}
 			${when(
-				this.isStartChatReached,
+				sessionData.isStartChatReached,
 				() => html`
 					<chat-info-strip .info=${this.getStartChatInfo()}></chat-info-strip>
 				`
@@ -301,7 +308,7 @@ export class ChatMessageList extends withChatContext(LitElement) {
 					time: this.formatTime(msg.time),
 					type: msg.type,
 				};
-				return msg.text.trim("") && this.renderMessage(message);
+				if (msg.text.length > 1) return this.renderMessage(message);
 			})}
 			${this.renderLoadingIndicator()}
 			${when(

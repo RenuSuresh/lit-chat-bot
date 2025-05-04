@@ -73,8 +73,8 @@ export class AIChat extends withChatContext(LitElement) {
 		const tags = {
 			// merchantId: "Pharmeasy",
 			// vertical: "pharma",
-			mid: "1",
-			bu: "PE",
+			mid: "3",
+			bu: "PEPSI",
 		};
 
 		const chatAPI = {

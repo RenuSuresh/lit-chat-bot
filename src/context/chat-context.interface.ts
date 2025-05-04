@@ -31,11 +31,12 @@ export interface ChatContext {
 		inputTextColor: string;
 		placeholderTextColor: string;
 	};
-	addMessage: (message: ChatMessage) => void;
+	addMessage?: (message: ChatMessage) => void;
 	setLoading: (loading: boolean) => void;
 	setConversationId: (id: string) => void;
 	setChatbotData: (data: ChatApiBody) => void;
 	updateTheme: (theme: Partial<ChatContext["theme"]>) => void;
 	addMessages: (messages: MessageGroup) => void;
 	appendMessage: (message: ChatMessage) => void;
+	prependMessages: (messages: MessageGroup) => void;
 }

@@ -119,13 +119,14 @@ class ChatBotApi {
 		conversationId?: string;
 		headers?: Record<string, string>;
 	}): Promise<any> {
+		const history = { limit: 1, last_conversation_id: conversationId };
 		const response = await api.post<SendMessageResponse>(
 			`${this.basePath}`,
 			{
 				inputs: {
 					tags: body.inputs.tags,
 					// parentOrderId: body.inputs.parentOrderId,
-					history: '{"limit":1,"last_conversation_id":""}',
+					history: JSON.stringify(history),
 				},
 				query: " ",
 				response_mode: "blocking",
