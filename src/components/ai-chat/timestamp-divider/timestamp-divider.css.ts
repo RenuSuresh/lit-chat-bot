@@ -6,7 +6,8 @@ export const styles = css`
 		align-items: center;
 		justify-content: center;
 		gap: 4px;
-		margin-top: 148px;
+		/* margin-top: 148px; */
+		margin-top: 24px;
 		margin-bottom: 32px;
 	}
 
