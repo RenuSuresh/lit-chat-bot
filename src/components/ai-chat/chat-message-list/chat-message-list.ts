@@ -316,7 +316,9 @@ export class ChatMessageList extends withChatContext(LitElement) {
 		const messages = Array.isArray(sessionMessages) ? sessionMessages : [];
 
 		return html`
-			${this.renderTimestampDivider()}
+			${when(!sessionData.isStartChatReached, () =>
+				this.renderTimestampDivider()
+			)}
 			${when(
 				sessionData.isStartChatReached,
 				() => html`
