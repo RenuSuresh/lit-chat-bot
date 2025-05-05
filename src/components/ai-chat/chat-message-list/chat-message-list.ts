@@ -36,24 +36,7 @@ interface ChatMessageGroup extends MessageGroup {
 
 @customElement("chat-message-list")
 export class ChatMessageList extends withChatContext(LitElement) {
-	static styles = [
-		commonStyles,
-		styles,
-		css`
-			.older-messages-loader {
-				display: flex;
-				justify-content: center;
-				align-items: center;
-				padding: 1rem;
-				width: calc(100% - 2rem);
-			}
-
-			.older-messages-loader chat-loader {
-				width: 24px;
-				height: 24px;
-			}
-		`,
-	];
+	static styles = [commonStyles, styles];
 
 	@state() isNewConversation = true;
 	@property({ type: String }) botImage: string = DEFAULT_IMAGES.BOT;

@@ -34,4 +34,16 @@ export const styles = css`
 		background-color: var(--bot-msg-bg-color);
 		max-width: calc(100% - 100px);
 	}
+	.older-messages-loader {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		padding: 1rem;
+		width: calc(100% - 2rem);
+	}
+
+	.older-messages-loader chat-loader {
+		width: 24px;
+		height: 24px;
+	}
 `;
