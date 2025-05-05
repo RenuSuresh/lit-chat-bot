@@ -29,7 +29,7 @@ export declare class AIChat extends AIChat_base {
     private hasUserDismissedPopup;
     private chatInputObserver;
     connectedCallback(): void;
-    firstUpdated(): void;
+    firstUpdated(): Promise<void>;
     disconnectedCallback(): void;
     private handleEndConversation;
     private handleRatingSelect;

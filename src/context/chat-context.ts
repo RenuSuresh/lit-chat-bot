@@ -1,15 +1,19 @@
 import { ReactiveController, ReactiveControllerHost } from "lit";
-import { ChatContext } from "./chat-context.interface";
+import { ChatContext, MessageGroup } from "./chat-context.interface";
+import { safeJsonParse, safeJsonStringify } from "../utils/json.util";
+import { ChatMessage } from "../components/ai-chat/theme.interface";
 
-class ChatContextSingleton {
+export class ChatContextSingleton {
 	private static instance: ChatContextSingleton;
 	private _context: ChatContext;
 
 	private constructor() {
 		this._context = {
 			messages: [],
+			messagesData: [],
 			isLoading: false,
 			conversationId: "",
+			lastHistoryConversationId: "",
 			chatbotData: {
 				chatAPI: {
 					body: {},
@@ -34,16 +38,54 @@ class ChatContextSingleton {
 				inputTextColor: "#30363c",
 				placeholderTextColor: "#8897a2",
 			},
-			addMessage: (message) => {
-				this._context.messages = [...this._context.messages, message];
+
+			addMessages: (messages) => {
+				this._context.messagesData = [...this._context.messagesData, messages];
+				ChatContextSingleton.notifyListeners();
+			},
+			appendMessage: (message) => {
+				if (this._context.messagesData.length === 0) {
+					// If no messages exist, create a new message group
+					this._context.messagesData = [
+						{
+							type: message.type,
+							text: message.text,
+							time: message.time,
+							messages: safeJsonStringify([message]),
+						},
+					];
+				} else {
+					// Get the last message group
+					const lastMessageGroup =
+						this._context.messagesData[this._context.messagesData.length - 1];
+					const parsedMessages = safeJsonParse<ChatMessage[]>(
+						lastMessageGroup.messages
+					);
+					const messagesArray = Array.isArray(parsedMessages)
+						? parsedMessages
+						: [];
+
+					// Add the new message to the group
+					messagesArray.push(message);
+
+					// Update the last message group with the new messages
+					this._context.messagesData[this._context.messagesData.length - 1] = {
+						...lastMessageGroup,
+						messages: safeJsonStringify(messagesArray),
+					};
+				}
 				ChatContextSingleton.notifyListeners();
 			},
 			setLoading: (loading) => {
 				this._context.isLoading = loading;
 				ChatContextSingleton.notifyListeners();
 			},
-			setConversationId: (id) => {
+			setCurrentSessionConversationId: (id) => {
 				this._context.conversationId = id;
+				ChatContextSingleton.notifyListeners();
+			},
+			setLastHistoryConversationId: (id) => {
+				this._context.lastHistoryConversationId = id;
 				ChatContextSingleton.notifyListeners();
 			},
 			setChatbotData: (data) => {
@@ -52,6 +94,10 @@ class ChatContextSingleton {
 			},
 			updateTheme: (theme) => {
 				this._context.theme = { ...this._context.theme, ...theme };
+				ChatContextSingleton.notifyListeners();
+			},
+			prependMessages: (messages) => {
+				this._context.messagesData = [messages, ...this._context.messagesData];
 				ChatContextSingleton.notifyListeners();
 			},
 		};

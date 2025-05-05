@@ -8,24 +8,13 @@ import { styles } from "./timestamp-divider.css";
 export class TimestampDivider extends LitElement {
 	static styles = [commonStyles, styles];
 	@property({ type: String }) timestamp = "";
-	@property({ type: Date }) date?: Date;
-
-	private get displayTimestamp() {
-		const options: Intl.DateTimeFormatOptions = {
-			hour: "2-digit",
-			minute: "2-digit",
-		};
-
-		return new Intl.DateTimeFormat(navigator.language, options).format(
-			this.date
-		);
-	}
+	@property({ type: Object }) date?: Date;
 
 	render() {
 		return html`
 			<div class="chat-timestamp-wrapper">
 				<div class="timestamp-left-line"></div>
-				<div class="timestamp">Today • ${this.displayTimestamp}</div>
+				<div class="timestamp">${this.timestamp}</div>
 				<div class="timestamp-right-line"></div>
 			</div>
 		`;

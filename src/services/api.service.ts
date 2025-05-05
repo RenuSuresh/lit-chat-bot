@@ -19,7 +19,9 @@ class ApiService {
 	private constructor(config: { baseUrl?: string; token?: string } = {}) {
 		this.baseUrl =
 			config.baseUrl || "https://easybot.private.dataplatform.link/";
-		this.token = config.token || "app-YX12rgf0CVRSXdtd4txQNOjy";
+		this.token =
+			config.token ||
+			"app-yIfts0G6vnYskGzTDRw4Qtmi" /* "app-YX12rgf0CVRSXdtd4txQNOjy" */;
 	}
 
 	public static getInstance(config?: {

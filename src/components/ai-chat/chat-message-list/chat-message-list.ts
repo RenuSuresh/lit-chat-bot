@@ -7,12 +7,28 @@ import { withChatContext } from "../../../context/with-chat-context";
 import { commonStyles } from "../styles.css";
 import { styles } from "./chat-message-list.css";
 import { DEFAULT_IMAGES } from "../constants";
-import type { ChatMessage, ChatInfo } from "../types/message.types";
+import type { ChatMessage as MessageTypesChatMessage } from "../types/message.types";
 import { MessageType } from "../types/message.types";
+import type { ChatMessage } from "../theme.interface";
+import { MessageGroup } from "../../../context/chat-context.interface";
 import "../chat-info-strip/chat-info-strip";
 import "../message/bot-message";
 import "../message/user-message";
 import "../chat-loader/chat-loader";
+import { safeJsonParse, safeJsonStringify } from "../../../utils/json.util";
+import { chatBotApi } from "../../../services/chat.service";
+
+interface SessionMessage {
+	text?: string;
+	time?: number;
+	type?: "query" | "answer";
+}
+
+interface ChatMessageGroup extends MessageGroup {
+	session?: string;
+	conversationId?: string;
+	isStartChatReached?: boolean;
+}
 
 @customElement("chat-message-list")
 export class ChatMessageList extends withChatContext(LitElement) {
@@ -23,96 +39,311 @@ export class ChatMessageList extends withChatContext(LitElement) {
 	@property({ type: Boolean }) isConversationClosed = false;
 	@property({ type: Boolean }) isStartChatReached = false;
 	@property({ type: Boolean }) isTransferCallReached = false;
+	@state() private isLoadingMore = false;
+	@state() private hasMoreMessages = true;
+	private scrollPositionBeforeLoad: number = 0;
 
 	private chatContainer: HTMLElement | null = null;
 	private observer: MutationObserver | null = null;
 
-	connectedCallback() {
-		super.connectedCallback();
+	private get messages(): ChatMessage[] {
+		if (!this.chatContext.messagesData?.length) return [];
+
+		return this.chatContext.messagesData.flatMap(
+			(sessionData: ChatMessageGroup) => {
+				const messages =
+					safeJsonParse<SessionMessage[]>(sessionData.messages) || [];
+				return Array.isArray(messages)
+					? messages.map((msg: SessionMessage) => ({
+							text: msg.text || "",
+							time: msg.time ? this.formatMessageTime(msg.time) : "",
+							type: msg.type || "answer",
+					  }))
+					: [];
+			}
+		);
 	}
 
-	disconnectedCallback() {
-		super.disconnectedCallback();
-		if (this.observer) {
-			this.observer.disconnect();
+	private scrollToBottom(shouldAnimate = false) {
+		if (!this.chatContainer) return;
+
+		if (shouldAnimate) {
+			this.chatContainer.scrollTo({
+				top: this.chatContainer.scrollHeight,
+				behavior: "smooth",
+			});
+		} else {
+			this.chatContainer.scrollTop = this.chatContainer.scrollHeight;
 		}
 	}
 
-	firstUpdated() {
+	private isBotMessage(msg: ChatMessage): boolean {
+		return msg.type === MessageType.ANSWER;
+	}
+
+	private convertToMessageTypes(msg: ChatMessage): MessageTypesChatMessage {
+		return {
+			text: msg.text,
+			time: msg.time,
+			sender: msg.type === "answer" ? "bot" : "user",
+			type: msg.type === "answer" ? MessageType.ANSWER : undefined,
+		};
+	}
+
+	private renderMessage(msg: ChatMessage) {
+		const convertedMsg = this.convertToMessageTypes(msg);
+		return when(
+			this.isBotMessage(msg),
+			() => html`
+				<bot-message
+					.message=${convertedMsg}
+					.botImage=${this.botImage}
+				></bot-message>
+			`,
+			() => html` <user-message .message=${convertedMsg}></user-message> `
+		);
+	}
+
+	private async handleScroll() {
+		if (!this.chatContainer || this.isLoadingMore || !this.hasMoreMessages)
+			return;
+
+		const { scrollTop, scrollHeight, clientHeight } = this.chatContainer;
+		const threshold = 100; // pixels from top
+
+		// Check if we're at the top or if there's no scroll
+		if (
+			((scrollTop === threshold && scrollHeight > clientHeight) ||
+				scrollTop === 0 ||
+				scrollHeight <= clientHeight) &&
+			!this.isStartChatReached
+		) {
+			this.scrollPositionBeforeLoad = scrollTop;
+			await this.loadMoreMessages();
+		}
+	}
+
+	private createMessageGroup(
+		type: string,
+		text: string,
+		time: number,
+		messages: any[],
+		additionalProps: Partial<ChatMessageGroup> = {}
+	): ChatMessageGroup {
+		return {
+			type: "answer",
+			text,
+			time: this.formatTime(time),
+			messages: safeJsonStringify(messages),
+			...additionalProps,
+		};
+	}
+
+	private async loadMoreMessages() {
+		this.isLoadingMore = true;
+
+		try {
+			if (this.chatContext.lastHistoryConversationId) {
+				// Store the current scroll height and position before loading new messages
+				const oldScrollHeight = this.chatContainer?.scrollHeight || 0;
+				const oldScrollTop = this.chatContainer?.scrollTop || 0;
+
+				const response = await chatBotApi.fetchConversationHistory({
+					conversationId: this.chatContext.lastHistoryConversationId,
+				});
+				if (response.answer === "{}") {
+					const startOfConversation = this.createMessageGroup(
+						"answer",
+						"Start of conversation",
+						response.created_at,
+						[],
+						{ isStartChatReached: true }
+					);
+					this.chatContext.prependMessages(startOfConversation);
+					this.hasMoreMessages = false;
+					this.isStartChatReached = true;
+				}
+
+				if (response.answer) {
+					const answer: any = safeJsonParse(response.answer);
+					const messages: any = safeJsonParse(answer.messages);
+					console.log(" response answer>>>>>>>", response, answer);
+					this.chatContext.setLastHistoryConversationId(answer.conversationId);
+
+					if (Object.keys(answer).length !== 0) {
+						const messageGroup = this.createMessageGroup(
+							"answer",
+							"Older messages",
+							response.created_at,
+							messages,
+							{
+								conversationId: answer.conversationId,
+								...answer,
+							}
+						);
+						this.chatContext.prependMessages(messageGroup);
+					}
+				} else {
+					this.hasMoreMessages = false;
+				}
+
+				// After the DOM updates, adjust scroll position and check if we need to load more
+				requestAnimationFrame(() => {
+					if (this.chatContainer) {
+						const newScrollHeight = this.chatContainer.scrollHeight;
+						const scrollDiff = newScrollHeight - oldScrollHeight;
+						// Maintain the relative scroll position
+						this.chatContainer.scrollTop = oldScrollTop + scrollDiff;
+
+						// Check if we need to load more messages
+						const hasScroll =
+							this.chatContainer.scrollHeight > this.chatContainer.clientHeight;
+						if (
+							!hasScroll &&
+							this.hasMoreMessages &&
+							!this.isStartChatReached
+						) {
+							// Load more messages if no scrollbar and not at start
+							this.loadMoreMessages();
+						}
+					}
+				});
+			}
+		} catch (error) {
+			console.error("Error loading more messages:", error);
+		} finally {
+			this.isLoadingMore = false;
+		}
+	}
+
+	async firstUpdated() {
+		const response = await chatBotApi.fetchConversationHistory({
+			conversationId: "",
+		});
+
+		const answer: any = safeJsonParse(response.answer);
+		const messages: any = safeJsonParse(answer.messages);
+
+		if (Object.keys(answer).length !== 0) {
+			const messageGroup = this.createMessageGroup(
+				"answer",
+				"Conversation history",
+				response.created_at,
+				messages,
+				{
+					conversationId: answer.conversationId,
+					...answer,
+				}
+			);
+			this.chatContext.addMessages(messageGroup);
+			if (answer.session === "open") {
+				this.chatContext.setCurrentSessionConversationId(answer.conversationId);
+			}
+		}
+		this.chatContext.setLastHistoryConversationId(answer.conversationId);
+
+		if (!messages || answer.session === "closed") {
+			const welcomeResponse = await chatBotApi.sendWelcomeMessage({});
+			const welcomeMessage = this.createMessageGroup(
+				"answer",
+				"Welcome message",
+				welcomeResponse.created_at,
+				[],
+				{ messages: welcomeResponse.answer }
+			);
+			this.chatContext.addMessages(welcomeMessage);
+			this.chatContext.setCurrentSessionConversationId(
+				welcomeResponse.conversation_id
+			);
+		}
+
 		this.chatContainer = this.shadowRoot?.getElementById(
 			"chat-container"
-		) as HTMLElement;
-		if (this.chatContainer && this.observer) {
-			this.observer.observe(this.chatContainer, {
-				childList: true,
-				characterData: true,
-				subtree: true,
-			});
-		}
-		this.scrollToBottom();
+		) as HTMLElement | null;
+
+		// Initial scroll to bottom and load more if needed
+		requestAnimationFrame(() => {
+			if (this.chatContainer) {
+				this.chatContainer.scrollTop = this.chatContainer.scrollHeight;
+
+				// Check if scroll is needed
+				const hasScroll =
+					this.chatContainer.scrollHeight > this.chatContainer.clientHeight;
+				if (!hasScroll && this.hasMoreMessages && !this.isStartChatReached) {
+					this.loadMoreMessages();
+				}
+			}
+		});
+
+		// Add scroll listener after initial scroll
+		this.chatContainer?.addEventListener(
+			"scroll",
+			this.handleScroll.bind(this)
+		);
 	}
 
 	updated(changedProperties: Map<string, any>) {
 		super.updated(changedProperties);
 
-		// Check if messages were updated
 		if (changedProperties.has("chatContext")) {
 			const oldMessages = changedProperties.get("chatContext")?.messages || [];
-			const newMessages = this.chatContext.messages;
+			const hasNewMessages = this.messages.length > oldMessages.length;
 
-			// Only scroll if there are new messages
-			if (newMessages.length > oldMessages.length) {
-				// Wait for the next frame to ensure DOM updates
-				requestAnimationFrame(() => {
-					// Add a small delay to ensure content is rendered
-					setTimeout(() => {
-						this.scrollToBottom();
-					}, 50);
-				});
-			}
-		}
+			requestAnimationFrame(() => {
+				// Only scroll to bottom for new messages, not when loading older messages
+				if (hasNewMessages) {
+					this.scrollToBottom(true);
+				}
 
-		// Also scroll for other relevant changes
-		if (
-			changedProperties.has("isConversationClosed") ||
-			changedProperties.has("isStartChatReached") ||
-			changedProperties.has("isTransferCallReached")
-		) {
-			this.scrollToBottom();
+				// Check if scroll is needed after messages update
+				if (
+					this.chatContainer &&
+					!this.isLoadingMore &&
+					this.hasMoreMessages &&
+					!this.isStartChatReached
+				) {
+					const hasScroll =
+						this.chatContainer.scrollHeight > this.chatContainer.clientHeight;
+					if (!hasScroll) {
+						this.loadMoreMessages();
+					}
+				}
+			});
 		}
 	}
 
-	private scrollToBottom() {
-		requestAnimationFrame(() => {
-			if (this.chatContainer) {
-				this.chatContainer.scrollTo({
-					top: this.chatContainer.scrollHeight,
-					behavior: "smooth",
-				});
-			}
-		});
-	}
+	private renderTimestampDivider(time: string) {
+		const [day, month, year] = time.split(" ");
+		const date = new Date(`${year}-${this.getMonthNumber(month)}-${day}`);
 
-	private renderTimestampDivider() {
 		return when(
 			this.isNewConversation,
 			() => html`
 				<timestamp-divider
-					.date=${new Date()}
+					.date=${date}
+					.timestamp=${this.formatTime(date.getTime())}
 					.showFullDate=${true}
 				></timestamp-divider>
 			`
 		);
 	}
 
-	private renderMessage(msg: ChatMessage) {
-		return when(
-			msg.sender === "bot",
-			() => html`
-				<bot-message .message=${msg} .botImage=${this.botImage}></bot-message>
-			`,
-			() => html` <user-message .message=${msg}></user-message> `
-		);
+	private getMonthNumber(month: string): string {
+		const months: { [key: string]: string } = {
+			January: "01",
+			February: "02",
+			March: "03",
+			April: "04",
+			May: "05",
+			June: "06",
+			July: "07",
+			August: "08",
+			September: "09",
+			October: "10",
+			November: "11",
+			December: "12",
+		};
+		return months[month] || "01";
 	}
 
 	private renderLoadingIndicator() {
@@ -128,59 +359,91 @@ export class ChatMessageList extends withChatContext(LitElement) {
 			: null;
 	}
 
-	private getStartChatInfo(): ChatInfo {
-		return {
-			type: MessageType.INFO,
-			message: "You've reached the start of the conversation.",
-		};
+	private renderOlderMessagesLoader() {
+		return this.isLoadingMore
+			? html`<div class="older-messages-loader">
+					<chat-loader></chat-loader>
+			  </div>`
+			: null;
 	}
 
-	private getConversationCloseInfo(): ChatInfo {
-		return {
-			type: MessageType.INFO,
-			message: "✅ This conversation has been closed",
-		};
+	private renderInfoMessage(text: string) {
+		return html`
+			<chat-info-strip
+				.info=${{ type: MessageType.INFO, message: text }}
+			></chat-info-strip>
+		`;
 	}
 
-	private getTransferCallInfo(): ChatInfo {
-		return {
-			type: MessageType.INFO,
-			message: "Transferring your call to one of our support executive",
-		};
+	private renderMessages(sessionData: ChatMessageGroup) {
+		const sessionMessages =
+			safeJsonParse<SessionMessage[]>(sessionData.messages) || [];
+		const messages = Array.isArray(sessionMessages) ? sessionMessages : [];
+		console.log("sessionData>>>>>>>", sessionData);
+
+		return html`
+			${when(!sessionData.isStartChatReached, () =>
+				this.renderTimestampDivider(sessionData.time)
+			)}
+			${when(sessionData.isStartChatReached, () =>
+				this.renderInfoMessage("You've reached the start of the conversation.")
+			)}
+			${messages.map((msg: SessionMessage) => {
+				if (!msg.text || msg.text.length <= 1) return null;
+
+				const message: ChatMessage = {
+					text: msg.text,
+					time: msg.time ? this.formatMessageTime(msg.time) : "",
+					type: msg.type || "answer",
+				};
+				return this.renderMessage(message);
+			})}
+			${this.renderLoadingIndicator()}
+			${when(sessionData.session === "closed", () =>
+				this.renderInfoMessage(
+					this.isTransferCallReached
+						? "Transferring your call to one of our support executive"
+						: "✅ This conversation has been closed"
+				)
+			)}
+		`;
 	}
 
-	// Add this method to allow external components to trigger scroll
+	render() {
+		return html`
+			<div class="chat-container" id="chat-container">
+				${this.renderOlderMessagesLoader()}
+				${this.chatContext.messagesData.map((sessionData) => {
+					return this.renderMessages(sessionData as ChatMessageGroup);
+				})}
+			</div>
+		`;
+	}
+
+	public formatTime(epochTime: number): string {
+		// Convert seconds to milliseconds if the timestamp is in seconds
+		const milliseconds = epochTime < 10000000000 ? epochTime * 1000 : epochTime;
+		const date = new Date(milliseconds);
+		const day = date.getDate().toString().padStart(2, "0");
+		const month = date.toLocaleString("en-US", { month: "long" });
+		const year = date.getFullYear();
+		return `${day} ${month} ${year}`;
+	}
+
+	private formatMessageTime(epochTime: number): string {
+		const date = new Date(epochTime);
+		return date.toLocaleTimeString([], {
+			hour: "2-digit",
+			minute: "2-digit",
+			hour12: true,
+		});
+	}
+
 	public forceScrollToBottom() {
 		requestAnimationFrame(() => {
 			setTimeout(() => {
 				this.scrollToBottom();
 			}, 50);
 		});
-	}
-
-	render() {
-		return html`
-			<div class="chat-container" id="chat-container">
-				${this.renderTimestampDivider()}
-				${when(
-					this.isStartChatReached,
-					() => html`
-						<chat-info-strip .info=${this.getStartChatInfo()}></chat-info-strip>
-					`
-				)}
-				${this.chatContext.messages.map((msg) => this.renderMessage(msg))}
-				${this.renderLoadingIndicator()}
-				${when(
-					this.isConversationClosed,
-					() => html`
-						<chat-info-strip
-							.info=${this.isTransferCallReached
-								? this.getTransferCallInfo()
-								: this.getConversationCloseInfo()}
-						></chat-info-strip>
-					`
-				)}
-			</div>
-		`;
 	}
 }

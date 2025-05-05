@@ -3,7 +3,7 @@ import { customElement, property, state } from "lit/decorators.js";
 import { commonStyles } from "./styles.css";
 import { DEFAULT_IMAGES } from "./constants";
 import { withChatContext } from "../../context/with-chat-context";
-import type { ChatApiBody, Theme } from "./theme.interface";
+import type { ChatApiBody, ChatMessage, Theme } from "./theme.interface";
 
 // Services
 import { chatBotApi } from "../../services/chat.service";
@@ -69,13 +69,37 @@ export class AIChat extends withChatContext(LitElement) {
 	// Lifecycle methods
 	connectedCallback() {
 		super.connectedCallback();
+
+		const tags = {
+			// merchantId: "Pharmeasy",
+			// vertical: "pharma",
+			mid: "3",
+			bu: "PEPSI",
+		};
+
+		const chatAPI = {
+			body: {
+				inputs: {
+					tags: JSON.stringify(tags),
+				},
+				user: "39783010",
+			},
+			headers: {},
+			theme: {},
+		};
+
+		const setupChatSession = () => {
+			sessionStorage.setItem("chatbotData", JSON.stringify({ chatAPI }));
+		};
+
+		setupChatSession();
 		this.initializeSessionStorage();
 		this.loadComponents();
 		this.chatContext.updateTheme(this.theme);
 		this.resetInactivityTimer();
 	}
 
-	firstUpdated() {
+	async firstUpdated() {
 		// Add observer for chat input height changes
 		const chatInput = this.shadowRoot?.querySelector("chat-input");
 

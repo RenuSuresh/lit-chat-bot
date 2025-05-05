@@ -1,4 +1,5 @@
 import { api } from "./api.service";
+import { ChatContextSingleton } from "../context/chat-context";
 
 // Define response interfaces
 interface SendMessageResponse {
@@ -23,28 +24,79 @@ interface ConversationHistory {
 	participants: string[];
 }
 
+interface ChatAPIBody {
+	inputs: {
+		tags: string;
+		parentOrderId: string;
+		history?: string;
+		conversationID?: string;
+		feedback?: string;
+		sessions?: string;
+	};
+	user: string;
+}
+
+interface ChatAPIConfig {
+	body: ChatAPIBody;
+	headers: Record<string, string>;
+	theme: Record<string, any>;
+}
+
 class ChatBotApi {
 	private readonly basePath = "v1/chat-messages";
+	private tags = JSON.stringify([]);
+	private user = "";
+	private inputs: Record<string, any> = {};
+	private headers = {};
+
+	constructor() {
+		// Set up context listener
+		ChatContextSingleton.getInstance().context.setChatbotData = (data) => {
+			this.updateConfig(data);
+			ChatContextSingleton.notifyListeners();
+		};
+	}
+
+	private updateConfig(data: any): void {
+		try {
+			if (!data?.chatAPI?.body) {
+				console.error("Invalid config data structure");
+				return;
+			}
+
+			const { inputs, user, headers } = data.chatAPI.body;
+
+			this.inputs = inputs || this.inputs;
+			this.tags = (inputs as any)?.tags || this.tags;
+			this.user = (user as string) || this.user;
+			this.headers = headers;
+		} catch (error) {
+			console.error("Error updating config:", error);
+		}
+	}
 
 	async sendMessage({
-		body,
 		message,
 		conversationId,
 		headers,
 	}: {
-		body: any;
 		message: string;
 		conversationId?: string;
 		headers?: Record<string, string>;
 	}): Promise<any> {
+		console.log("Sending message with tags:", this.tags);
 		const response = await api.post<SendMessageResponse>(
 			`${this.basePath}`,
 			{
-				inputs: body.inputs,
+				inputs: {
+					tags: this.tags,
+					conversation_id: conversationId || undefined,
+					...this.inputs,
+				},
 				query: message,
 				response_mode: "blocking",
 				conversation_id: conversationId || undefined,
-				user: body.user,
+				user: this.user,
 			},
 			{
 				headers,
@@ -53,54 +105,87 @@ class ChatBotApi {
 		return response;
 	}
 
-	// async getConversationHistory(
-	// 	userId: string,
-	// 	conversationId?: string
-	// ): Promise<{ messages: ChatMessage[] }> {
-	// 	const params = new URLSearchParams({ userId });
-	// 	if (conversationId) params.append("conversationId", conversationId);
+	async sendWelcomeMessage({}: {}): Promise<any> {
+		console.log("Sending welcome message with tags:", this.tags);
+		const response = await api.post<SendMessageResponse>(
+			`${this.basePath}`,
+			{
+				inputs: {
+					tags: this.tags,
+					conversation_id: "",
+					...this.inputs,
+				},
+				query: " ",
+				response_mode: "blocking",
+				conversation_id: "",
+				user: this.user,
+			},
+			{
+				headers: this.headers,
+			}
+		);
+		return response;
+	}
 
-	// 	return api.get<{ messages: ChatMessage[] }>(
-	// 		`${this.basePath}/conversations?${params.toString()}`
-	// 	);
-	// }
-
-	// async startNewConversation(
-	// 	userId: string
-	// ): Promise<{ conversationId: string }> {
-	// 	return api.post<{ conversationId: string }>(
-	// 		`${this.basePath}/conversations`,
-	// 		{ userId }
-	// 	);
-	// }
-
-	// async uploadAttachment(
-	// 	file: File,
-	// 	conversationId: string
-	// ): Promise<{ url: string; type: string }> {
-	// 	const formData = new FormData();
-	// 	formData.append("file", file);
-	// 	formData.append("conversationId", conversationId);
-
-	// 	return api.post<{ url: string; type: string }>(
-	// 		`${this.basePath}/attachments`,
-	// 		formData,
-	// 		true // Custom flag to skip JSON headers
-	// 	);
-	// }
-
-	async submitFeedback({
-		rating,
+	async fetchConversationHistory({
 		conversationId,
 	}: {
-		rating: number;
-		conversationId: string;
-	}): Promise<void> {
-		await api.post(`${this.basePath}/feedback`, {
-			rating,
-			conversation_id: conversationId,
-		});
+		conversationId?: string;
+		headers?: Record<string, string>;
+	}): Promise<any> {
+		console.log("Fetching history with tags:", this.tags);
+		const history = { limit: 1, last_conversation_id: conversationId };
+		const response = await api.post<SendMessageResponse>(
+			`${this.basePath}`,
+			{
+				inputs: {
+					tags: this.tags,
+					history: JSON.stringify(history),
+					...this.inputs,
+				},
+				query: " ",
+				response_mode: "blocking",
+				conversation_id: "",
+				user: this.user,
+			},
+			{
+				headers: this.headers,
+			}
+		);
+		return response;
+	}
+
+	async submitFeedback({
+		conversationId,
+		rating,
+	}: {
+		conversationId?: string;
+		rating?: number;
+		headers?: Record<string, string>;
+	}): Promise<any> {
+		console.log("Submitting feedback with tags:", this.tags);
+		const response = await api.post<SendMessageResponse>(
+			`${this.basePath}`,
+			{
+				inputs: {
+					tags: this.tags,
+					conversation_id: conversationId,
+					rating,
+					...this.inputs,
+				},
+				query: " ",
+				response_mode: "blocking",
+				conversation_id: conversationId,
+				user: this.user,
+				session: "closed",
+			},
+			{
+				headers: this.headers,
+			}
+		);
+		return response;
 	}
 }
 
+// Create and export a singleton instance
 export const chatBotApi = new ChatBotApi();

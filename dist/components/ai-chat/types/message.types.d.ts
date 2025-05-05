@@ -1,12 +1,14 @@
 export interface ChatMessage {
     text: string;
-    sender: "user" | "bot";
-    time: string;
+    sender?: "user" | "bot" | "assistant";
+    time: string | number;
     type?: MessageType;
     metadata?: Record<string, any>;
 }
 export declare enum MessageType {
-    INFO = "info"
+    INFO = "info",
+    ANSWER = "answer",
+    QUERY = "query"
 }
 export interface MessageMetadata {
     orderId?: string;

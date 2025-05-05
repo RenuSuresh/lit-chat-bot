@@ -5,6 +5,8 @@ import { commonStyles } from "../styles.css";
 import { styles } from "./chat-input.css";
 import { withChatContext } from "../../../context/with-chat-context";
 import { chatBotApi } from "../../../services/chat.service";
+import { safeJsonParse } from "../../../utils/json.util";
+
 const maxHeight = 72;
 const MAX_CHARS = 200;
 
@@ -94,8 +96,8 @@ export class ChatInput extends withChatContext(LitElement) {
 		const userMessage = e.detail.text;
 
 		// Add user message
-		this.chatContext.addMessage({
-			sender: "user",
+		this.chatContext.appendMessage({
+			type: "query",
 			text: userMessage,
 			time: this.getCurrentTime(),
 		});
@@ -117,23 +119,13 @@ export class ChatInput extends withChatContext(LitElement) {
 
 		try {
 			const response = await chatBotApi.sendMessage({
-				body: this.chatContext.chatbotData.chatAPI.body,
 				message: userMessage,
 				conversationId: this.chatContext.conversationId,
 			});
 
-			this.chatContext.setConversationId(response.conversation_id);
+			const botMessage: any = safeJsonParse(response.answer);
 
-			const botMessage =
-				JSON.parse(response.answer).assistantLastMessage ||
-				"Sorry, I encountered an error. Please try again.";
-
-			// Add bot message
-			this.chatContext.addMessage({
-				sender: "bot",
-				text: botMessage,
-				time: this.getCurrentTime(),
-			});
+			this.chatContext.appendMessage(botMessage[0]);
 
 			// Force scroll after bot message
 			if (chatMessageList) {
@@ -141,8 +133,8 @@ export class ChatInput extends withChatContext(LitElement) {
 			}
 		} catch (error) {
 			// Add error message
-			this.chatContext.addMessage({
-				sender: "bot",
+			this.chatContext.appendMessage({
+				type: "answer",
 				text: "Sorry, I encountered an error. Please try again.",
 				time: this.getCurrentTime(),
 			});

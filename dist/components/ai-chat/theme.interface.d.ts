@@ -17,13 +17,14 @@ export interface Theme {
     placeholderTextColor: string;
 }
 export interface ChatMessage {
-    sender: "user" | "bot";
+    type: "query" | "answer";
     text: string;
     time: string;
 }
 export interface ChatApiBody {
     chatAPI: {
-        body: Record<string, unknown>;
+        body?: Record<string, unknown>;
+        headers?: any;
     };
     customerCareNumber: string;
 }
