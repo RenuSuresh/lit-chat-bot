@@ -157,8 +157,10 @@ class ChatBotApi {
 
 	async submitFeedback({
 		conversationId,
+		rating,
 	}: {
 		conversationId?: string;
+		rating?: number;
 		headers?: Record<string, string>;
 	}): Promise<any> {
 		console.log("Submitting feedback with tags:", this.tags);
@@ -168,6 +170,7 @@ class ChatBotApi {
 				inputs: {
 					tags: this.tags,
 					conversation_id: conversationId,
+					rating,
 					...this.inputs,
 				},
 				query: " ",
