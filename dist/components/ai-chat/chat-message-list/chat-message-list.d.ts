@@ -1,0 +1,43 @@
+import { LitElement } from "lit";
+import "../timestamp-divider/timestamp-divider";
+import "../chat-info-strip/chat-info-strip";
+import "../message/bot-message";
+import "../message/user-message";
+import "../chat-loader/chat-loader";
+declare const ChatMessageList_base: (new (...args: any[]) => LitElement & {
+    chatContext: import("../../../context/chat-context.interface").ChatContext;
+}) & typeof LitElement;
+export declare class ChatMessageList extends ChatMessageList_base {
+    static styles: import("lit").CSSResult[];
+    isNewConversation: boolean;
+    botImage: string;
+    isConversationClosed: boolean;
+    isStartChatReached: boolean;
+    isTransferCallReached: boolean;
+    private isLoadingMore;
+    private hasMoreMessages;
+    private scrollPositionBeforeLoad;
+    private chatContainer;
+    private observer;
+    private get messages();
+    private scrollToBottom;
+    private isBotMessage;
+    private convertToMessageTypes;
+    private renderMessage;
+    private handleScroll;
+    private createMessageGroup;
+    private loadMoreMessages;
+    firstUpdated(): Promise<void>;
+    updated(changedProperties: Map<string, any>): void;
+    private renderTimestampDivider;
+    private getMonthNumber;
+    private renderLoadingIndicator;
+    private renderOlderMessagesLoader;
+    private renderInfoMessage;
+    private renderMessages;
+    render(): import("lit-html").TemplateResult<1>;
+    formatTime(epochTime: number): string;
+    private formatMessageTime;
+    forceScrollToBottom(): void;
+}
+export {};

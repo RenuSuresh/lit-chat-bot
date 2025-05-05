@@ -1,6 +1,6 @@
 {
   "name": "renu-lit-components",
-  "version": "1.0.70",
+  "version": "1.0.71",
   "description": "A UI component library built with Lit",
   "main": "dist/my-lit-components.js",
   "module": "dist/my-lit-components.esm.js",
