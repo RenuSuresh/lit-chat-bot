@@ -7,10 +7,7 @@ import { withChatContext } from "../../../context/with-chat-context";
 import { commonStyles } from "../styles.css";
 import { styles } from "./chat-message-list.css";
 import { DEFAULT_IMAGES } from "../constants";
-import type {
-	ChatMessage as MessageTypesChatMessage,
-	ChatInfo,
-} from "../types/message.types";
+import type { ChatMessage as MessageTypesChatMessage } from "../types/message.types";
 import { MessageType } from "../types/message.types";
 import type { ChatMessage } from "../theme.interface";
 import { MessageGroup } from "../../../context/chat-context.interface";
@@ -154,7 +151,6 @@ export class ChatMessageList extends withChatContext(LitElement) {
 				const response = await chatBotApi.fetchConversationHistory({
 					conversationId: this.chatContext.lastHistoryConversationId,
 				});
-				console.log("start response>>>>>>>", response);
 				if (response.answer === "{}") {
 					const startOfConversation = this.createMessageGroup(
 						"answer",
@@ -167,9 +163,11 @@ export class ChatMessageList extends withChatContext(LitElement) {
 					this.hasMoreMessages = false;
 					this.isStartChatReached = true;
 				}
+
 				if (response.answer) {
 					const answer: any = safeJsonParse(response.answer);
 					const messages: any = safeJsonParse(answer.messages);
+					console.log(" response answer>>>>>>>", response, answer);
 					this.chatContext.setLastHistoryConversationId(answer.conversationId);
 
 					if (Object.keys(answer).length !== 0) {
@@ -238,6 +236,9 @@ export class ChatMessageList extends withChatContext(LitElement) {
 				}
 			);
 			this.chatContext.addMessages(messageGroup);
+			if (answer.session === "open") {
+				this.chatContext.setCurrentSessionConversationId(answer.conversationId);
+			}
 		}
 		this.chatContext.setLastHistoryConversationId(answer.conversationId);
 
