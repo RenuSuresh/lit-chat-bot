@@ -3,7 +3,7 @@ import { ChatContext, MessageGroup } from "./chat-context.interface";
 import { safeJsonParse, safeJsonStringify } from "../utils/json.util";
 import { ChatMessage } from "../components/ai-chat/theme.interface";
 
-class ChatContextSingleton {
+export class ChatContextSingleton {
 	private static instance: ChatContextSingleton;
 	private _context: ChatContext;
 
@@ -13,6 +13,7 @@ class ChatContextSingleton {
 			messagesData: [],
 			isLoading: false,
 			conversationId: "",
+			lastHistoryConversationId: "",
 			chatbotData: {
 				chatAPI: {
 					body: {},
@@ -37,6 +38,7 @@ class ChatContextSingleton {
 				inputTextColor: "#30363c",
 				placeholderTextColor: "#8897a2",
 			},
+
 			addMessages: (messages) => {
 				this._context.messagesData = [...this._context.messagesData, messages];
 				ChatContextSingleton.notifyListeners();
@@ -74,20 +76,16 @@ class ChatContextSingleton {
 				}
 				ChatContextSingleton.notifyListeners();
 			},
-			// addMessage: (message) => {
-			// 	if (Array.isArray(message)) {
-			// 		this._context.messages = [...this._context.messages, ...message];
-			// 	} else {
-			// 		this._context.messages = [...this._context.messages, message];
-			// 	}
-			// 	ChatContextSingleton.notifyListeners();
-			// },
 			setLoading: (loading) => {
 				this._context.isLoading = loading;
 				ChatContextSingleton.notifyListeners();
 			},
-			setConversationId: (id) => {
+			setCurrentSessionConversationId: (id) => {
 				this._context.conversationId = id;
+				ChatContextSingleton.notifyListeners();
+			},
+			setLastHistoryConversationId: (id) => {
+				this._context.lastHistoryConversationId = id;
 				ChatContextSingleton.notifyListeners();
 			},
 			setChatbotData: (data) => {

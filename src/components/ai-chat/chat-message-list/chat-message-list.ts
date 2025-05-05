@@ -24,7 +24,7 @@ import { chatBotApi } from "../../../services/chat.service";
 interface SessionMessage {
 	text: string;
 	time: number;
-	type: "user" | "bot" | "query" | "answer";
+	type: "query" | "answer";
 }
 
 interface ChatMessageGroup extends MessageGroup {
@@ -81,15 +81,14 @@ export class ChatMessageList extends withChatContext(LitElement) {
 	}
 
 	private isBotMessage(msg: ChatMessage): boolean {
-		return msg.type === "bot" || msg.type === MessageType.ANSWER;
+		return msg.type === MessageType.ANSWER;
 	}
 
 	private convertToMessageTypes(msg: ChatMessage): MessageTypesChatMessage {
 		return {
 			text: msg.text,
 			time: msg.time,
-			sender:
-				msg.type === "bot" || msg.type === MessageType.ANSWER ? "bot" : "user",
+			sender: msg.type === MessageType.ANSWER ? "bot" : "user",
 			type: msg.type === MessageType.ANSWER ? MessageType.ANSWER : undefined,
 		};
 	}
@@ -110,9 +109,7 @@ export class ChatMessageList extends withChatContext(LitElement) {
 
 	async firstUpdated() {
 		const response = await chatBotApi.fetchConversationHistory({
-			body: this.chatContext.chatbotData.chatAPI.body,
-			conversationId: this.chatContext.conversationId,
-			headers: this.chatContext.chatbotData.chatAPI.headers,
+			conversationId: "",
 		});
 
 		const answer: any = safeJsonParse(response.answer);
@@ -120,34 +117,26 @@ export class ChatMessageList extends withChatContext(LitElement) {
 
 		if (Object.keys(answer).length !== 0) {
 			const messageGroup: ChatMessageGroup = {
-				type: "bot",
-				text: "Conversation history",
-				time: new Date().toISOString(),
 				messages: safeJsonStringify(messages),
 				conversationId: answer.conversationId,
+				...answer,
 			};
 			this.chatContext.addMessages(messageGroup);
 		}
-		this.chatContext.setConversationId(answer.conversationId);
+		this.chatContext.setLastHistoryConversationId(answer.conversationId);
 
-		const messagesData = this.chatContext.messagesData as ChatMessageGroup[];
-		const lastMessage = messagesData[messagesData.length - 1];
-
-		if (!messages || lastMessage.session === "closed") {
+		if (!messages || answer.session === "closed") {
 			const welcomeResponse = await chatBotApi.sendWelcomeMessage({
-				body: this.chatContext.chatbotData.chatAPI.body,
 				conversationId: "",
-				headers: this.chatContext.chatbotData.chatAPI.headers,
 			});
 			const welcomeMessage: ChatMessageGroup = {
-				type: "bot",
-				text: "Welcome message",
 				time: new Date().toISOString(),
 				messages: welcomeResponse.answer,
-				conversationId: "",
 			};
 			this.chatContext.addMessages(welcomeMessage);
-			this.chatContext.setConversationId(welcomeResponse.conversation_id);
+			this.chatContext.setCurrentSessionConversationId(
+				welcomeResponse.conversation_id
+			);
 		}
 
 		this.chatContainer = this.shadowRoot?.getElementById(
@@ -178,12 +167,13 @@ export class ChatMessageList extends withChatContext(LitElement) {
 
 		const { scrollTop, scrollHeight, clientHeight } = this.chatContainer;
 		const threshold = 100; // pixels from top
+		console.log("scrollHeight>>>>", scrollHeight, clientHeight, scrollTop);
 		if (
-			(scrollTop <= threshold &&
+			(scrollTop === threshold &&
 				this.chatContainer.scrollHeight > clientHeight) ||
 			scrollTop === 0
 		) {
-			this.scrollPositionBeforeLoad = scrollHeight;
+			this.scrollPositionBeforeLoad = scrollTop;
 			await this.loadMoreMessages();
 		}
 	}
@@ -192,32 +182,29 @@ export class ChatMessageList extends withChatContext(LitElement) {
 		this.isLoadingMore = true;
 
 		try {
-			const messagesData = this.chatContext.messagesData as ChatMessageGroup[];
-			const lastMessage = messagesData[messagesData.length - 1];
 			const response = await chatBotApi.fetchConversationHistory({
-				body: this.chatContext.chatbotData.chatAPI.body,
-				conversationId: lastMessage.conversationId,
-				headers: this.chatContext.chatbotData.chatAPI.headers,
+				conversationId: this.chatContext.lastHistoryConversationId,
 			});
 
 			if (response.answer === "{}") {
 				const startOfConversation: ChatMessageGroup = {
-					type: "bot",
-					text: "Start of conversation",
-					time: new Date().toISOString(),
-					messages: "",
 					isStartChatReached: true,
 				};
 				this.chatContext.prependMessages(startOfConversation);
 			}
-			if (response.messages && response.messages.length > 0) {
-				const messageGroup: ChatMessageGroup = {
-					type: "bot",
-					text: "Older messages",
-					time: new Date().toISOString(),
-					messages: safeJsonStringify(response.messages),
-				};
-				this.chatContext.prependMessages(messageGroup);
+			if (response.answer) {
+				const answer: any = safeJsonParse(response.answer);
+				const messages: any = safeJsonParse(answer.messages);
+				this.chatContext.setLastHistoryConversationId(answer.conversationId);
+
+				if (Object.keys(answer).length !== 0) {
+					const messageGroup: ChatMessageGroup = {
+						messages: safeJsonStringify(messages),
+						conversationId: answer.conversationId,
+						...answer,
+					};
+					this.chatContext.prependMessages(messageGroup);
+				}
 			} else {
 				this.hasMoreMessages = false;
 			}
@@ -228,8 +215,13 @@ export class ChatMessageList extends withChatContext(LitElement) {
 
 			if (this.chatContainer) {
 				const newScrollHeight = this.chatContainer.scrollHeight;
-				this.chatContainer.scrollTop =
-					newScrollHeight - this.scrollPositionBeforeLoad;
+				// this.chatContainer.scrollTop =
+				// 	newScrollHeight - this.scrollPositionBeforeLoad;
+				this.chatContainer.scrollTop = 200;
+				console.log(
+					"this.chatContainer.scrollTop>>>>",
+					this.chatContainer.scrollTop
+				);
 			}
 		}
 	}
@@ -349,6 +341,10 @@ export class ChatMessageList extends withChatContext(LitElement) {
 
 	render() {
 		requestAnimationFrame(() => this.scrollToBottom(false));
+		console.log(
+			"this.chatContext.messagesData>>>>>",
+			this.chatContext.messagesData
+		);
 		return html`
 			<div class="chat-container" id="chat-container">
 				${this.chatContext.messagesData.map((sessionData) => {

@@ -119,7 +119,6 @@ export class ChatInput extends withChatContext(LitElement) {
 
 		try {
 			const response = await chatBotApi.sendMessage({
-				body: this.chatContext.chatbotData.chatAPI.body,
 				message: userMessage,
 				conversationId: this.chatContext.conversationId,
 			});

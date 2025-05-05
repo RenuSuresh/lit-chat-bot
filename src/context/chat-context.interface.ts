@@ -12,6 +12,7 @@ export interface ChatContext {
 	messagesData: MessageGroup[];
 	isLoading: boolean;
 	conversationId: string;
+	lastHistoryConversationId: string;
 	chatbotData: ChatApiBody;
 	theme: {
 		fontFamily: string;
@@ -33,7 +34,8 @@ export interface ChatContext {
 	};
 	addMessage?: (message: ChatMessage) => void;
 	setLoading: (loading: boolean) => void;
-	setConversationId: (id: string) => void;
+	setCurrentSessionConversationId: (id: string) => void;
+	setLastHistoryConversationId: (id: string) => void;
 	setChatbotData: (data: ChatApiBody) => void;
 	updateTheme: (theme: Partial<ChatContext["theme"]>) => void;
 	addMessages: (messages: MessageGroup) => void;

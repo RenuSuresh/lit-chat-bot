@@ -81,7 +81,6 @@ export class AIChat extends withChatContext(LitElement) {
 			body: {
 				inputs: {
 					tags: JSON.stringify(tags),
-					// only when history is required
 				},
 				user: "39783010",
 			},
