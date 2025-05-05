@@ -1,7 +1,6 @@
 import { LitElement, html } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { when } from "lit/directives/when.js";
-import { css } from "lit";
 
 import "../timestamp-divider/timestamp-divider";
 import { withChatContext } from "../../../context/with-chat-context";
@@ -23,9 +22,9 @@ import { safeJsonParse, safeJsonStringify } from "../../../utils/json.util";
 import { chatBotApi } from "../../../services/chat.service";
 
 interface SessionMessage {
-	text: string;
-	time: number;
-	type: "query" | "answer";
+	text?: string;
+	time?: number;
+	type?: "query" | "answer";
 }
 
 interface ChatMessageGroup extends MessageGroup {
@@ -59,9 +58,9 @@ export class ChatMessageList extends withChatContext(LitElement) {
 					safeJsonParse<SessionMessage[]>(sessionData.messages) || [];
 				return Array.isArray(messages)
 					? messages.map((msg: SessionMessage) => ({
-							text: msg.text,
-							time: this.formatTime(msg.time),
-							type: msg.type,
+							text: msg.text || "",
+							time: msg.time ? this.formatMessageTime(msg.time) : "",
+							type: msg.type || "answer",
 					  }))
 					: [];
 			}
@@ -127,6 +126,22 @@ export class ChatMessageList extends withChatContext(LitElement) {
 		}
 	}
 
+	private createMessageGroup(
+		type: string,
+		text: string,
+		time: number,
+		messages: any[],
+		additionalProps: Partial<ChatMessageGroup> = {}
+	): ChatMessageGroup {
+		return {
+			type: "answer",
+			text,
+			time: this.formatTime(time),
+			messages: safeJsonStringify(messages),
+			...additionalProps,
+		};
+	}
+
 	private async loadMoreMessages() {
 		this.isLoadingMore = true;
 
@@ -139,21 +154,15 @@ export class ChatMessageList extends withChatContext(LitElement) {
 				const response = await chatBotApi.fetchConversationHistory({
 					conversationId: this.chatContext.lastHistoryConversationId,
 				});
-
+				console.log("start response>>>>>>>", response);
 				if (response.answer === "{}") {
-					const startOfConversation: ChatMessageGroup = {
-						type: "answer",
-						text: "Start of conversation",
-						time: new Date().toISOString(),
-						messages: safeJsonStringify([
-							{
-								type: "answer",
-								text: "You've reached the start of the conversation.",
-								time: new Date().getTime(),
-							},
-						]),
-						isStartChatReached: true,
-					};
+					const startOfConversation = this.createMessageGroup(
+						"answer",
+						"Start of conversation",
+						response.created_at,
+						[],
+						{ isStartChatReached: true }
+					);
 					this.chatContext.prependMessages(startOfConversation);
 					this.hasMoreMessages = false;
 					this.isStartChatReached = true;
@@ -164,14 +173,16 @@ export class ChatMessageList extends withChatContext(LitElement) {
 					this.chatContext.setLastHistoryConversationId(answer.conversationId);
 
 					if (Object.keys(answer).length !== 0) {
-						const messageGroup: ChatMessageGroup = {
-							type: "answer",
-							text: "Older messages",
-							time: new Date().toISOString(),
-							messages: safeJsonStringify(messages),
-							conversationId: answer.conversationId,
-							...answer,
-						};
+						const messageGroup = this.createMessageGroup(
+							"answer",
+							"Older messages",
+							response.created_at,
+							messages,
+							{
+								conversationId: answer.conversationId,
+								...answer,
+							}
+						);
 						this.chatContext.prependMessages(messageGroup);
 					}
 				} else {
@@ -216,26 +227,29 @@ export class ChatMessageList extends withChatContext(LitElement) {
 		const messages: any = safeJsonParse(answer.messages);
 
 		if (Object.keys(answer).length !== 0) {
-			const messageGroup: ChatMessageGroup = {
-				type: "answer",
-				text: "Conversation history",
-				time: new Date().toISOString(),
-				messages: safeJsonStringify(messages),
-				conversationId: answer.conversationId,
-				...answer,
-			};
+			const messageGroup = this.createMessageGroup(
+				"answer",
+				"Conversation history",
+				response.created_at,
+				messages,
+				{
+					conversationId: answer.conversationId,
+					...answer,
+				}
+			);
 			this.chatContext.addMessages(messageGroup);
 		}
 		this.chatContext.setLastHistoryConversationId(answer.conversationId);
 
 		if (!messages || answer.session === "closed") {
 			const welcomeResponse = await chatBotApi.sendWelcomeMessage({});
-			const welcomeMessage: ChatMessageGroup = {
-				type: "answer",
-				text: "Welcome message",
-				time: new Date().toISOString(),
-				messages: welcomeResponse.answer,
-			};
+			const welcomeMessage = this.createMessageGroup(
+				"answer",
+				"Welcome message",
+				welcomeResponse.created_at,
+				[],
+				{ messages: welcomeResponse.answer }
+			);
 			this.chatContext.addMessages(welcomeMessage);
 			this.chatContext.setCurrentSessionConversationId(
 				welcomeResponse.conversation_id
@@ -297,16 +311,38 @@ export class ChatMessageList extends withChatContext(LitElement) {
 		}
 	}
 
-	private renderTimestampDivider() {
+	private renderTimestampDivider(time: string) {
+		const [day, month, year] = time.split(" ");
+		const date = new Date(`${year}-${this.getMonthNumber(month)}-${day}`);
+
 		return when(
 			this.isNewConversation,
 			() => html`
 				<timestamp-divider
-					.date=${new Date()}
+					.date=${date}
+					.timestamp=${this.formatTime(date.getTime())}
 					.showFullDate=${true}
 				></timestamp-divider>
 			`
 		);
+	}
+
+	private getMonthNumber(month: string): string {
+		const months: { [key: string]: string } = {
+			January: "01",
+			February: "02",
+			March: "03",
+			April: "04",
+			May: "05",
+			June: "06",
+			July: "07",
+			August: "08",
+			September: "09",
+			October: "10",
+			November: "11",
+			December: "12",
+		};
+		return months[month] || "01";
 	}
 
 	private renderLoadingIndicator() {
@@ -342,21 +378,24 @@ export class ChatMessageList extends withChatContext(LitElement) {
 		const sessionMessages =
 			safeJsonParse<SessionMessage[]>(sessionData.messages) || [];
 		const messages = Array.isArray(sessionMessages) ? sessionMessages : [];
+		console.log("sessionData>>>>>>>", sessionData);
 
 		return html`
 			${when(!sessionData.isStartChatReached, () =>
-				this.renderTimestampDivider()
+				this.renderTimestampDivider(sessionData.time)
 			)}
 			${when(sessionData.isStartChatReached, () =>
 				this.renderInfoMessage("You've reached the start of the conversation.")
 			)}
 			${messages.map((msg: SessionMessage) => {
+				if (!msg.text || msg.text.length <= 1) return null;
+
 				const message: ChatMessage = {
 					text: msg.text,
-					time: this.formatTime(msg.time),
-					type: msg.type,
+					time: msg.time ? this.formatMessageTime(msg.time) : "",
+					type: msg.type || "answer",
 				};
-				if (msg.text.length > 1) return this.renderMessage(message);
+				return this.renderMessage(message);
 			})}
 			${this.renderLoadingIndicator()}
 			${when(sessionData.session === "closed", () =>
@@ -380,7 +419,17 @@ export class ChatMessageList extends withChatContext(LitElement) {
 		`;
 	}
 
-	private formatTime(epochTime: number): string {
+	public formatTime(epochTime: number): string {
+		// Convert seconds to milliseconds if the timestamp is in seconds
+		const milliseconds = epochTime < 10000000000 ? epochTime * 1000 : epochTime;
+		const date = new Date(milliseconds);
+		const day = date.getDate().toString().padStart(2, "0");
+		const month = date.toLocaleString("en-US", { month: "long" });
+		const year = date.getFullYear();
+		return `${day} ${month} ${year}`;
+	}
+
+	private formatMessageTime(epochTime: number): string {
 		const date = new Date(epochTime);
 		return date.toLocaleTimeString([], {
 			hour: "2-digit",
