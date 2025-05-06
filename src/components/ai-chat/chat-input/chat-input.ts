@@ -94,12 +94,11 @@ export class ChatInput extends withChatContext(LitElement) {
 		// this.handleInputActivity(); // Reset timer when message is sent
 		this.chatContext.setLoading(true);
 		const userMessage = e.detail.text;
-
 		// Add user message
 		this.chatContext.appendMessage({
 			type: "query",
 			text: userMessage,
-			time: this.getCurrentTime(),
+			time: Math.floor(Date.now() / 1000),
 		});
 		const root = document.querySelector("ai-chat");
 
