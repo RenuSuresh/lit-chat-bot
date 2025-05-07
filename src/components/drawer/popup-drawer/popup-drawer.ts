@@ -2,9 +2,11 @@ import { LitElement, html, css } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import "../base-drawer";
 import { DEFAULT_VALUES } from "../../ai-chat/constants";
+import { chatBotApi } from "../../../services/chat.service";
+import { withChatContext } from "../../../context/with-chat-context";
 
 @customElement("popup-drawer")
-export class PopupDrawer extends LitElement {
+export class PopupDrawer extends withChatContext(LitElement) {
 	static styles = css`
 		:host {
 			--drawer-max-width: 320px;
@@ -152,6 +154,10 @@ export class PopupDrawer extends LitElement {
 		this.open = false;
 		this.hasUserDismissed = true;
 		this.clearInactivityTimer();
+		chatBotApi.submitFeedback({
+			conversationId: this.chatContext.conversationId,
+			rating: 4,
+		});
 	}
 
 	private handleSecondaryClick() {
