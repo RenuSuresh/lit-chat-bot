@@ -5,6 +5,7 @@ import {
 
 export interface MessageGroup extends ChatMessage {
 	messages: string; // JSON stringified array of ChatMessage
+	session?: string;
 }
 
 export interface ChatContext {

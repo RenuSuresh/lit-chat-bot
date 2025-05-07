@@ -155,6 +155,9 @@ export class BaseDrawer extends LitElement {
 	@property({ type: Boolean })
 	private isClosing = false;
 
+	@property({ type: Boolean })
+	showCloseButton = true;
+
 	private backdrop: HTMLDivElement | null = null;
 
 	private popStateHandler = () => {
@@ -257,19 +260,24 @@ export class BaseDrawer extends LitElement {
 							position=${this.position}
 							part="drawer-content"
 						>
-							<div
-								class="close-button-wrapper"
-								position=${this.position}
-								part="close-wrapper"
-							>
-								<button
-									class="close-button"
-									@click=${this.handleClose}
-									part="close-button"
-								>
-									×
-								</button>
-							</div>
+							${when(
+								this.showCloseButton,
+								() => html`
+									<div
+										class="close-button-wrapper"
+										position=${this.position}
+										part="close-wrapper"
+									>
+										<button
+											class="close-button"
+											@click=${this.handleClose}
+											part="close-button"
+										>
+											×
+										</button>
+									</div>
+								`
+							)}
 							<div
 								class="drawer-container"
 								position=${this.position}

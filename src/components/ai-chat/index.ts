@@ -14,7 +14,7 @@ import "./chat-message-list/chat-message-list";
 import "./chat-input/chat-input";
 import "./chat-loader/chat-loader";
 import "../drawer/feedback/feedback-bottom-sheet";
-import "../drawer/popup-drawer/popup-drawer";
+import "../drawer/session-close-popup/session-close-popup";
 
 @customElement("ai-chat")
 export class AIChat extends withChatContext(LitElement) {
@@ -276,7 +276,7 @@ export class AIChat extends withChatContext(LitElement) {
 
 			<feedback-bottom-sheet></feedback-bottom-sheet>
 
-			<popup-drawer></popup-drawer>
+			<session-close-popup></session-close-popup>
 		`;
 	}
 }
