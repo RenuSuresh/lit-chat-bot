@@ -148,23 +148,16 @@ export class PopupDrawer extends withChatContext(LitElement) {
 		this.hasUserDismissed = true;
 		this.clearInactivityTimer();
 		this.dispatchEvent(new CustomEvent("close"));
+		this.chatContext.setShowFeedbackDrawer(true);
 	}
 
 	private handlePrimaryClick() {
-		this.open = false;
-		this.hasUserDismissed = true;
-		this.clearInactivityTimer();
-		chatBotApi.submitFeedback({
-			conversationId: this.chatContext.conversationId,
-			rating: 4,
-		});
+		this.handleClose();
 	}
 
 	private handleSecondaryClick() {
 		window.location.href = `tel:${this.phoneNumber}`;
-
-		this.open = false;
-		this.clearInactivityTimer();
+		this.handleClose();
 	}
 
 	render() {

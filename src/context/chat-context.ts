@@ -14,6 +14,7 @@ export class ChatContextSingleton {
 			isLoading: false,
 			conversationId: "",
 			lastHistoryConversationId: "",
+			showFeedbackDrawer: false,
 			chatbotData: {
 				chatAPI: {
 					body: {},
@@ -98,6 +99,10 @@ export class ChatContextSingleton {
 			},
 			prependMessages: (messages) => {
 				this._context.messagesData = [messages, ...this._context.messagesData];
+				ChatContextSingleton.notifyListeners();
+			},
+			setShowFeedbackDrawer: (show: boolean) => {
+				this._context.showFeedbackDrawer = show;
 				ChatContextSingleton.notifyListeners();
 			},
 		};

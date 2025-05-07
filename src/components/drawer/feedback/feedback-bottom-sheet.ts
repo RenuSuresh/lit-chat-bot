@@ -2,23 +2,42 @@ import { LitElement, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import "../base-drawer";
 import "./feedback-content";
+import { withChatContext } from "../../../context/with-chat-context";
+import { chatBotApi } from "../../../services/chat.service";
 
 @customElement("feedback-bottom-sheet")
-export class FeedbackBottomSheet extends LitElement {
-	@property({ type: Boolean, reflect: true })
-	open = false;
-
+export class FeedbackBottomSheet extends withChatContext(LitElement) {
 	@property({ type: Number })
 	rating = 0;
 
 	@property({ type: Boolean })
 	submitted = false;
 
-	private handleClose() {
-		this.submitted = false;
-		this.rating = 0;
-		this.open = false;
-		this.dispatchEvent(new CustomEvent("close"));
+	private async handleClose() {
+		await chatBotApi
+			.submitFeedback({
+				conversationId: this.chatContext.conversationId,
+				rating: this.rating,
+			})
+			.then(() => {
+				const lastMessage = this.chatContext.messagesData.pop();
+				if (lastMessage) {
+					lastMessage.session = "closed";
+					this.chatContext.messagesData.push(lastMessage);
+					const root = document.querySelector("ai-chat");
+
+					// Get the chat message list and force scroll
+					const chatMessageList =
+						root?.shadowRoot?.querySelector("chat-message-list");
+					if (chatMessageList) {
+						(chatMessageList as any).forceScrollToBottom();
+					}
+				}
+				this.submitted = false;
+				this.chatContext.setShowFeedbackDrawer(false);
+				this.dispatchEvent(new CustomEvent("close"));
+				this.rating = 0;
+			});
 	}
 
 	private handleSubmit() {
@@ -37,7 +56,10 @@ export class FeedbackBottomSheet extends LitElement {
 
 	render() {
 		return html`
-			<base-drawer ?open=${this.open} @close=${this.handleClose}>
+			<base-drawer
+				?open=${this.chatContext.showFeedbackDrawer}
+				@close=${this.handleClose}
+			>
 				<feedback-content
 					.rating=${this.rating}
 					.submitted=${this.submitted}

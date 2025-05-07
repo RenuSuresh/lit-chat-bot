@@ -13,6 +13,7 @@ export interface ChatContext {
 	isLoading: boolean;
 	conversationId: string;
 	lastHistoryConversationId: string;
+	showFeedbackDrawer: boolean;
 	chatbotData: ChatApiBody;
 	theme: {
 		fontFamily: string;
@@ -41,4 +42,5 @@ export interface ChatContext {
 	addMessages: (messages: MessageGroup) => void;
 	appendMessage: (message: ChatMessage) => void;
 	prependMessages: (messages: MessageGroup) => void;
+	setShowFeedbackDrawer: (show: boolean) => void;
 }
