@@ -156,10 +156,6 @@ export class ChatContextProvider implements ReactiveController {
 		ChatContextSingleton.addListener(host);
 	}
 
-	hostConnected() {
-		// Initialize any necessary setup when the host connects
-	}
-
 	hostDisconnected() {
 		ChatContextSingleton.removeListener(this.host);
 	}
