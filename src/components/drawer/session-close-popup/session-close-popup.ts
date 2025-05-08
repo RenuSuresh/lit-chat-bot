@@ -25,7 +25,7 @@ export class SessionClosePopup extends withChatContext(LitElement) {
 	secondaryButtonText = "Call support";
 
 	@property({ type: Number })
-	inactivityTimeout = 500000;
+	inactivityTimeout = 5000;
 
 	@property({ type: String }) phoneNumber: string =
 		DEFAULT_VALUES.CUSTOMER_CARE_NUMBER;
@@ -47,7 +47,9 @@ export class SessionClosePopup extends withChatContext(LitElement) {
 		if (!this.hasUserDismissed) {
 			this.clearInactivityTimer();
 			this.inactivityTimer = window.setTimeout(() => {
-				this.open = true;
+				if (!this.hasUserDismissed) {
+					this.open = true;
+				}
 			}, this.inactivityTimeout);
 		}
 	}
@@ -55,6 +57,7 @@ export class SessionClosePopup extends withChatContext(LitElement) {
 	public handleActivity() {
 		if (!this.hasUserDismissed) {
 			this.open = false;
+			this.clearInactivityTimer();
 			this.startInactivityTimer();
 		}
 	}

@@ -61,6 +61,19 @@ export class ChatInput extends withChatContext(LitElement) {
 		this.inputValue = input.value;
 		this.charCount = input.value.length;
 		this._adjustHeight();
+
+		// Reset inactivity timer on typing
+		this.resetInactivityTimer();
+	}
+
+	private resetInactivityTimer() {
+		const root = document.querySelector("ai-chat");
+		const sessionClosePopup = root?.shadowRoot?.querySelector(
+			"session-close-popup"
+		);
+		if (sessionClosePopup) {
+			(sessionClosePopup as any).handleActivity();
+		}
 	}
 
 	private _handleKeyPress(e: KeyboardEvent) {
@@ -91,7 +104,9 @@ export class ChatInput extends withChatContext(LitElement) {
 	}
 
 	private async handleSendMessage(e: any) {
-		// this.handleInputActivity(); // Reset timer when message is sent
+		// Reset timer when message is sent
+		this.resetInactivityTimer();
+
 		this.chatContext.setLoading(true);
 		const userMessage = e.detail.text;
 		// Add user message
@@ -144,6 +159,22 @@ export class ChatInput extends withChatContext(LitElement) {
 			}
 		} finally {
 			this.chatContext.setLoading(false);
+		}
+	}
+
+	connectedCallback() {
+		super.connectedCallback();
+		const textarea = this.shadowRoot?.querySelector("textarea");
+		if (textarea) {
+			textarea.addEventListener("input", this._handleInput.bind(this));
+		}
+	}
+
+	disconnectedCallback() {
+		super.disconnectedCallback();
+		const textarea = this.shadowRoot?.querySelector("textarea");
+		if (textarea) {
+			textarea.removeEventListener("input", this._handleInput.bind(this));
 		}
 	}
 

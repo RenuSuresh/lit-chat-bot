@@ -104,9 +104,22 @@ export class ChatMessageList extends withChatContext(LitElement) {
 		);
 	}
 
-	private async handleScroll() {
+	private resetInactivityTimer() {
+		const root = document.querySelector("ai-chat");
+		const sessionClosePopup = root?.shadowRoot?.querySelector(
+			"session-close-popup"
+		);
+		if (sessionClosePopup) {
+			(sessionClosePopup as any).handleActivity();
+		}
+	}
+
+	private handleScroll() {
 		if (!this.chatContainer || this.isLoadingMore || !this.hasMoreMessages)
 			return;
+
+		// Reset inactivity timer on scroll
+		this.resetInactivityTimer();
 
 		const { scrollTop, scrollHeight, clientHeight } = this.chatContainer;
 		const threshold = 100; // pixels from top
@@ -119,7 +132,7 @@ export class ChatMessageList extends withChatContext(LitElement) {
 			!this.isStartChatReached
 		) {
 			this.scrollPositionBeforeLoad = scrollTop;
-			await this.loadMoreMessages();
+			this.loadMoreMessages();
 		}
 	}
 
