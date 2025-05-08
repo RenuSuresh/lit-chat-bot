@@ -20,7 +20,7 @@ export interface Theme {
 export interface ChatMessage {
 	type: "query" | "answer";
 	text: string;
-	time: string;
+	time: string | number;
 }
 
 export interface ChatApiBody {

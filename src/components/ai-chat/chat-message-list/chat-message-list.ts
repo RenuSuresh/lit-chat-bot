@@ -167,7 +167,6 @@ export class ChatMessageList extends withChatContext(LitElement) {
 				if (response.answer) {
 					const answer: any = safeJsonParse(response.answer);
 					const messages: any = safeJsonParse(answer.messages);
-					console.log(" response answer>>>>>>>", response, answer);
 					this.chatContext.setLastHistoryConversationId(answer.conversationId);
 
 					if (Object.keys(answer).length !== 0) {
@@ -379,18 +378,16 @@ export class ChatMessageList extends withChatContext(LitElement) {
 		const sessionMessages =
 			safeJsonParse<SessionMessage[]>(sessionData.messages) || [];
 		const messages = Array.isArray(sessionMessages) ? sessionMessages : [];
-		console.log("sessionData>>>>>>>", sessionData);
 
 		return html`
 			${when(!sessionData.isStartChatReached, () =>
-				this.renderTimestampDivider(sessionData.time)
+				this.renderTimestampDivider(String(sessionData.time))
 			)}
 			${when(sessionData.isStartChatReached, () =>
 				this.renderInfoMessage("You've reached the start of the conversation.")
 			)}
 			${messages.map((msg: SessionMessage) => {
 				if (!msg.text || msg.text.length <= 1) return null;
-
 				const message: ChatMessage = {
 					text: msg.text,
 					time: msg.time ? this.formatMessageTime(msg.time) : "",
@@ -425,14 +422,14 @@ export class ChatMessageList extends withChatContext(LitElement) {
 		const milliseconds = epochTime < 10000000000 ? epochTime * 1000 : epochTime;
 		const date = new Date(milliseconds);
 		const day = date.getDate().toString().padStart(2, "0");
-		const month = date.toLocaleString("en-US", { month: "long" });
+		const month = date.toLocaleString("en-IN", { month: "long" });
 		const year = date.getFullYear();
 		return `${day} ${month} ${year}`;
 	}
 
 	private formatMessageTime(epochTime: number): string {
-		const date = new Date(epochTime);
-		return date.toLocaleTimeString([], {
+		const date = new Date(epochTime * 1000);
+		return date.toLocaleTimeString("en-IN", {
 			hour: "2-digit",
 			minute: "2-digit",
 			hour12: true,

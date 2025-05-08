@@ -164,20 +164,23 @@ class ChatBotApi {
 		headers?: Record<string, string>;
 	}): Promise<any> {
 		console.log("Submitting feedback with tags:", this.tags);
+		const inputs = {
+			tags: this.tags,
+			conversation_id: conversationId,
+			session: "closed",
+			...this.inputs,
+		};
+		if (rating) {
+			inputs.feedback = String(rating);
+		}
 		const response = await api.post<SendMessageResponse>(
 			`${this.basePath}`,
 			{
-				inputs: {
-					tags: this.tags,
-					conversation_id: conversationId,
-					rating,
-					...this.inputs,
-				},
+				inputs,
 				query: " ",
 				response_mode: "blocking",
-				conversation_id: conversationId,
+				conversation_id: "",
 				user: this.user,
-				session: "closed",
 			},
 			{
 				headers: this.headers,

@@ -14,7 +14,7 @@ import "./chat-message-list/chat-message-list";
 import "./chat-input/chat-input";
 import "./chat-loader/chat-loader";
 import "../drawer/feedback/feedback-bottom-sheet";
-import "../drawer/popup-drawer/popup-drawer";
+import "../drawer/session-close-popup/session-close-popup";
 
 @customElement("ai-chat")
 export class AIChat extends withChatContext(LitElement) {
@@ -267,14 +267,16 @@ export class AIChat extends withChatContext(LitElement) {
 
 			<!-- Add the bottom drawer for feedback -->
 
-			<feedback-bottom-sheet
+			<!-- <feedback-bottom-sheet
 				?open=${this.showFeedbackDrawer}
 				@close=${() => (this.showFeedbackDrawer = false)}
 				@rating-select=${this.handleRatingSelect}
 				@submit=${this.submitFeedback}
-			></feedback-bottom-sheet>
+			></feedback-bottom-sheet> -->
 
-			<popup-drawer></popup-drawer>
+			<feedback-bottom-sheet></feedback-bottom-sheet>
+
+			<session-close-popup></session-close-popup>
 		`;
 	}
 }

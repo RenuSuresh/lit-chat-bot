@@ -94,12 +94,11 @@ export class ChatInput extends withChatContext(LitElement) {
 		// this.handleInputActivity(); // Reset timer when message is sent
 		this.chatContext.setLoading(true);
 		const userMessage = e.detail.text;
-
 		// Add user message
 		this.chatContext.appendMessage({
 			type: "query",
 			text: userMessage,
-			time: this.getCurrentTime(),
+			time: Math.floor(Date.now() / 1000),
 		});
 		const root = document.querySelector("ai-chat");
 
@@ -136,7 +135,7 @@ export class ChatInput extends withChatContext(LitElement) {
 			this.chatContext.appendMessage({
 				type: "answer",
 				text: "Sorry, I encountered an error. Please try again.",
-				time: this.getCurrentTime(),
+				time: Math.floor(Date.now() / 1000),
 			});
 
 			// Force scroll after error message
@@ -146,22 +145,6 @@ export class ChatInput extends withChatContext(LitElement) {
 		} finally {
 			this.chatContext.setLoading(false);
 		}
-
-		if (
-			userMessage.includes("no, thanks") ||
-			userMessage.includes("no thanks") ||
-			userMessage.includes("that's all")
-		) {
-			// this.handleEndConversation();
-			console.log("handle end conversation>>>>");
-		}
-	}
-
-	private getCurrentTime(): string {
-		return new Date().toLocaleTimeString([], {
-			hour: "2-digit",
-			minute: "2-digit",
-		});
 	}
 
 	render() {
