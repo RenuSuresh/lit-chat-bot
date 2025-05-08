@@ -61,7 +61,7 @@ export class AIChat extends withChatContext(LitElement) {
 
 	@state() private showInactivityPopup = false;
 	private inactivityTimer: number | null = null;
-	private readonly INACTIVITY_TIMEOUT = 5000; // 5 seconds
+	private readonly INACTIVITY_TIMEOUT = 500000; // 5 seconds
 	private hasUserDismissedPopup = false;
 
 	private chatInputObserver: ResizeObserver | null = null;

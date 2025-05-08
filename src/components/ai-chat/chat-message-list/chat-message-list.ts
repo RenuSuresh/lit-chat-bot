@@ -123,16 +123,16 @@ export class ChatMessageList extends withChatContext(LitElement) {
 		}
 	}
 
-	private createMessageGroup(
-		type: string,
-		text: string,
-		time: number,
-		messages: any[],
-		additionalProps: Partial<ChatMessageGroup> = {}
-	): ChatMessageGroup {
+	private createMessageGroup({
+		time,
+		messages,
+		additionalProps = {},
+	}: {
+		time: number;
+		messages: any[];
+		additionalProps?: Partial<ChatMessageGroup>;
+	}): any {
 		return {
-			type: "answer",
-			text,
 			time: this.formatTime(time),
 			messages: safeJsonStringify(messages),
 			...additionalProps,
@@ -152,34 +152,30 @@ export class ChatMessageList extends withChatContext(LitElement) {
 					conversationId: this.chatContext.lastHistoryConversationId,
 				});
 				if (response.answer === "{}") {
-					const startOfConversation = this.createMessageGroup(
-						"answer",
-						"Start of conversation",
-						response.created_at,
-						[],
-						{ isStartChatReached: true }
-					);
+					const startOfConversation = this.createMessageGroup({
+						time: response.created_at,
+						messages: [],
+						additionalProps: { isStartChatReached: true },
+					});
 					this.chatContext.prependMessages(startOfConversation);
 					this.hasMoreMessages = false;
 					this.isStartChatReached = true;
 				}
 
-				if (response.answer) {
+				if (response.answer && !this.isStartChatReached) {
 					const answer: any = safeJsonParse(response.answer);
 					const messages: any = safeJsonParse(answer.messages);
 					this.chatContext.setLastHistoryConversationId(answer.conversationId);
 
 					if (Object.keys(answer).length !== 0) {
-						const messageGroup = this.createMessageGroup(
-							"answer",
-							"Older messages",
-							response.created_at,
+						const messageGroup = this.createMessageGroup({
+							time: response.created_at,
 							messages,
-							{
+							additionalProps: {
 								conversationId: answer.conversationId,
 								...answer,
-							}
-						);
+							},
+						});
 						this.chatContext.prependMessages(messageGroup);
 					}
 				} else {
@@ -224,16 +220,14 @@ export class ChatMessageList extends withChatContext(LitElement) {
 		const messages: any = safeJsonParse(answer.messages);
 
 		if (Object.keys(answer).length !== 0) {
-			const messageGroup = this.createMessageGroup(
-				"answer",
-				"Conversation history",
-				response.created_at,
+			const messageGroup = this.createMessageGroup({
+				time: response.created_at,
 				messages,
-				{
+				additionalProps: {
 					conversationId: answer.conversationId,
 					...answer,
-				}
-			);
+				},
+			});
 			this.chatContext.addMessages(messageGroup);
 			if (answer.session === "open") {
 				this.chatContext.setCurrentSessionConversationId(answer.conversationId);
@@ -243,13 +237,11 @@ export class ChatMessageList extends withChatContext(LitElement) {
 
 		if (!messages || answer.session === "closed") {
 			const welcomeResponse = await chatBotApi.sendWelcomeMessage({});
-			const welcomeMessage = this.createMessageGroup(
-				"answer",
-				"Welcome message",
-				welcomeResponse.created_at,
-				[],
-				{ messages: welcomeResponse.answer }
-			);
+			const welcomeMessage = this.createMessageGroup({
+				time: welcomeResponse.created_at,
+				messages: [],
+				additionalProps: { messages: welcomeResponse.answer },
+			});
 			this.chatContext.addMessages(welcomeMessage);
 			this.chatContext.setCurrentSessionConversationId(
 				welcomeResponse.conversation_id

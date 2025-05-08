@@ -25,7 +25,7 @@ export class SessionClosePopup extends withChatContext(LitElement) {
 	secondaryButtonText = "Call support";
 
 	@property({ type: Number })
-	inactivityTimeout = 5000;
+	inactivityTimeout = 500000;
 
 	@property({ type: String }) phoneNumber: string =
 		DEFAULT_VALUES.CUSTOMER_CARE_NUMBER;
