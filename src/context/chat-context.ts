@@ -105,6 +105,15 @@ export class ChatContextSingleton {
 				this._context.showFeedbackDrawer = show;
 				ChatContextSingleton.notifyListeners();
 			},
+			resetInactivityTimer: () => {
+				const root = document.querySelector("ai-chat");
+				const sessionClosePopup = root?.shadowRoot?.querySelector(
+					"session-close-popup"
+				);
+				if (sessionClosePopup) {
+					(sessionClosePopup as any).handleActivity();
+				}
+			},
 		};
 	}
 

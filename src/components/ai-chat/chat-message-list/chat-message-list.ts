@@ -104,22 +104,12 @@ export class ChatMessageList extends withChatContext(LitElement) {
 		);
 	}
 
-	private resetInactivityTimer() {
-		const root = document.querySelector("ai-chat");
-		const sessionClosePopup = root?.shadowRoot?.querySelector(
-			"session-close-popup"
-		);
-		if (sessionClosePopup) {
-			(sessionClosePopup as any).handleActivity();
-		}
-	}
-
 	private handleScroll() {
 		if (!this.chatContainer || this.isLoadingMore || !this.hasMoreMessages)
 			return;
 
 		// Reset inactivity timer on scroll
-		this.resetInactivityTimer();
+		this.chatContext.resetInactivityTimer();
 
 		const { scrollTop, scrollHeight, clientHeight } = this.chatContainer;
 		const threshold = 100; // pixels from top

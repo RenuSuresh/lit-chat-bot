@@ -44,4 +44,5 @@ export interface ChatContext {
 	appendMessage: (message: ChatMessage) => void;
 	prependMessages: (messages: MessageGroup) => void;
 	setShowFeedbackDrawer: (show: boolean) => void;
+	resetInactivityTimer: () => void;
 }

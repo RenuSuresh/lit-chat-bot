@@ -47,9 +47,7 @@ export class SessionClosePopup extends withChatContext(LitElement) {
 		if (!this.hasUserDismissed) {
 			this.clearInactivityTimer();
 			this.inactivityTimer = window.setTimeout(() => {
-				if (!this.hasUserDismissed) {
-					this.open = true;
-				}
+				this.open = true;
 			}, this.inactivityTimeout);
 		}
 	}
@@ -84,6 +82,15 @@ export class SessionClosePopup extends withChatContext(LitElement) {
 	private handleSecondaryClick() {
 		window.location.href = `tel:${this.phoneNumber}`;
 		this.handleClose();
+	}
+
+	updated(changedProperties: Map<string, any>) {
+		super.updated(changedProperties);
+
+		console.log("change properties>>>>>>>>", changedProperties);
+		if (changedProperties.has("chatContext")) {
+			this.handleActivity();
+		}
 	}
 
 	render() {
