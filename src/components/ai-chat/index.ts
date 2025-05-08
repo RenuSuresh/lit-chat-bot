@@ -3,10 +3,7 @@ import { customElement, property, state } from "lit/decorators.js";
 import { commonStyles } from "./styles.css";
 import { DEFAULT_IMAGES } from "./constants";
 import { withChatContext } from "../../context/with-chat-context";
-import type { ChatApiBody, ChatMessage, Theme } from "./theme.interface";
-
-// Services
-import { chatBotApi } from "../../services/chat.service";
+import type { ChatApiBody, Theme } from "./theme.interface";
 
 // Components
 import "./header/chat-header";
@@ -55,14 +52,7 @@ export class AIChat extends withChatContext(LitElement) {
 
 	@state() private showChatInput: boolean = true;
 
-	@state() private showFeedbackDrawer = false;
-
-	@state() private rating: number = 0;
-
-	@state() private showInactivityPopup = false;
 	private inactivityTimer: number | null = null;
-	private readonly INACTIVITY_TIMEOUT = 5000; // 5 seconds
-	private hasUserDismissedPopup = false;
 
 	private chatInputObserver: ResizeObserver | null = null;
 
@@ -96,7 +86,6 @@ export class AIChat extends withChatContext(LitElement) {
 		this.initializeSessionStorage();
 		this.loadComponents();
 		this.chatContext.updateTheme(this.theme);
-		this.resetInactivityTimer();
 	}
 
 	async firstUpdated() {
@@ -124,47 +113,6 @@ export class AIChat extends withChatContext(LitElement) {
 		}
 	}
 
-	private handleEndConversation() {
-		// this.showChatInput = false;
-		this.showFeedbackDrawer = true;
-	}
-
-	// Add this method to handle rating selection
-	private handleRatingSelect(e: CustomEvent) {
-		this.rating = e.detail.rating;
-	}
-
-	// Add this method to submit feedback
-	private async submitFeedback() {
-		try {
-			await chatBotApi.submitFeedback({
-				rating: this.rating,
-				conversationId: this.chatContext.conversationId,
-			});
-			this.showFeedbackDrawer = false;
-		} catch (error) {
-			console.error("Error submitting feedback:", error);
-		}
-	}
-
-	private resetInactivityTimer() {
-		if (this.inactivityTimer) {
-			window.clearTimeout(this.inactivityTimer);
-		}
-		if (!this.hasUserDismissedPopup) {
-			this.inactivityTimer = window.setTimeout(() => {
-				this.showInactivityPopup = true;
-			}, this.INACTIVITY_TIMEOUT);
-		}
-	}
-
-	private handleInputActivity() {
-		if (!this.hasUserDismissedPopup) {
-			this.showInactivityPopup = false;
-			this.resetInactivityTimer();
-		}
-	}
-
 	// Private methods
 	private initializeSessionStorage() {
 		try {
@@ -175,10 +123,10 @@ export class AIChat extends withChatContext(LitElement) {
 					chatAPI: {
 						body: {
 							inputs: {
-								userId: "39783010",
-								parentOrderId: "525744916255784960",
+								userId: "",
+								parentOrderId: "",
 							},
-							user: "Rakesh",
+							user: "",
 						},
 						headers: {},
 						theme: {},
@@ -260,19 +208,12 @@ export class AIChat extends withChatContext(LitElement) {
 			<chat-message-list .botImage=${this.botImage}></chat-message-list>
 
 			${this.showChatInput
-				? html`<chat-input @input=${this.handleInputActivity}></chat-input>`
+				? html`<chat-input></chat-input>`
 				: html`<talk-to-agent
 						.phoneNumber=${this.chatContext.chatbotData.customerCareNumber}
 				  ></talk-to-agent>`}
 
 			<!-- Add the bottom drawer for feedback -->
-
-			<!-- <feedback-bottom-sheet
-				?open=${this.showFeedbackDrawer}
-				@close=${() => (this.showFeedbackDrawer = false)}
-				@rating-select=${this.handleRatingSelect}
-				@submit=${this.submitFeedback}
-			></feedback-bottom-sheet> -->
 
 			<feedback-bottom-sheet></feedback-bottom-sheet>
 

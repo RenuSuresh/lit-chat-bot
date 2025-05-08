@@ -61,6 +61,9 @@ export class ChatInput extends withChatContext(LitElement) {
 		this.inputValue = input.value;
 		this.charCount = input.value.length;
 		this._adjustHeight();
+
+		// Reset inactivity timer on typing
+		this.chatContext.resetInactivityTimer();
 	}
 
 	private _handleKeyPress(e: KeyboardEvent) {
@@ -91,7 +94,9 @@ export class ChatInput extends withChatContext(LitElement) {
 	}
 
 	private async handleSendMessage(e: any) {
-		// this.handleInputActivity(); // Reset timer when message is sent
+		// Reset timer when message is sent
+		this.chatContext.resetInactivityTimer();
+
 		this.chatContext.setLoading(true);
 		const userMessage = e.detail.text;
 		// Add user message

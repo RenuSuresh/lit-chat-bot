@@ -105,6 +105,15 @@ export class ChatContextSingleton {
 				this._context.showFeedbackDrawer = show;
 				ChatContextSingleton.notifyListeners();
 			},
+			resetInactivityTimer: () => {
+				const root = document.querySelector("ai-chat");
+				const sessionClosePopup = root?.shadowRoot?.querySelector(
+					"session-close-popup"
+				);
+				if (sessionClosePopup) {
+					(sessionClosePopup as any).handleActivity();
+				}
+			},
 		};
 	}
 
@@ -145,10 +154,6 @@ export class ChatContextProvider implements ReactiveController {
 		host.addController(this);
 		this._context = ChatContextSingleton.getInstance().context;
 		ChatContextSingleton.addListener(host);
-	}
-
-	hostConnected() {
-		// Initialize any necessary setup when the host connects
 	}
 
 	hostDisconnected() {
