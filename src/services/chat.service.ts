@@ -188,6 +188,32 @@ class ChatBotApi {
 		);
 		return response;
 	}
+
+	async fetchConversationHistoryList(): Promise<any> {
+		console.log("Fetching history list with tags:", this.tags);
+
+		const response = await api.post<SendMessageResponse>(
+			`${this.basePath}`,
+			{
+				inputs: {
+					tags: this.tags,
+					conversationId: "",
+					session_state: "open",
+					limit: 100,
+					offset: 10,
+					...this.inputs,
+				},
+				query: " ",
+				response_mode: "blocking",
+				conversation_id: "",
+				user: this.user,
+			},
+			{
+				headers: this.headers,
+			}
+		);
+		return response;
+	}
 }
 
 // Create and export a singleton instance
